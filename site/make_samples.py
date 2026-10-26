@@ -1,7 +1,7 @@
 """Preview builder (box only). Inputs:
   CV repo (generated data):  publications.bib, projects.bib, main.tex (publist/project order, \\begin{cvbio} bio),
                              supervision.bib (optional, not yet in the repo)
-  Site repo (hand-edited):   home.yml, sections.yml, journals.yml, venues.yml
+  Site repo (hand-edited):   home.yml, publications.yml (sections / journals / series)
 Outputs: index.html, publications.html.
 Production: export_md.py writes content/*.md with YAML front matter and build.py renders Jinja2 templates; the
 cell/row logic below is what those templates do."""
@@ -12,10 +12,11 @@ OUT = os.environ.get('OUT_DIR', '.')                                         # _
 os.makedirs(OUT, exist_ok=True)
 import datetime; YEAR = datetime.date.today().year
 P = parse(CV + 'publications.bib'); J = parse(CV + 'projects.bib')
-CFG = yaml.safe_load(open('sections.yml'))['sections']
+PUBCFG = yaml.safe_load(open('publications.yml'))   # sections / journals / series
+CFG = PUBCFG['sections']
 HOME = yaml.safe_load(open('home.yml'))
-JOURNALS = {j['name']: j for j in yaml.safe_load(open('journals.yml'))['journals']}
-SERIES = yaml.safe_load(open('venues.yml'))['series']
+JOURNALS = {j['name']: j for j in PUBCFG['journals']}
+SERIES = PUBCFG['series']
 tex = open(CV + 'main.tex').read()
 tex_nc = '\n'.join(l for l in tex.splitlines() if not l.lstrip().startswith('%'))
 ORDER = {lab: re.findall(r'\\pub\{([^}]+)\}', body)
@@ -29,7 +30,7 @@ STATUS = {'published': 'Published', 'accepted': 'Accepted', 'submitted': 'Submit
 NA = '<span class="na" title="not available">–</span>'
 FUNNEL = '<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="M1.5 2h13l-5 6v5l-3 1.5V8z" fill="currentColor"/></svg>'
 
-# ---------- publisher: bib `publisher` > journals.yml > same journal elsewhere in the bib > DOI prefix ----------
+# ---------- publisher: bib `publisher` > publications.yml journals > same journal elsewhere in the bib > DOI prefix ----------
 DOI_PUB = {'10.1109': 'IEEE', '10.23919': 'IEEE', '10.1016': 'Elsevier', '10.1364': 'Optica', '10.1145': 'ACM',
            '10.3390': 'MDPI', '10.1007': 'Springer', '10.1142': 'World Scientific', '10.5281': 'Zenodo',
            '10.14279': 'TU Berlin (DepositOnce)'}
@@ -45,7 +46,7 @@ def publisher(e):
               or ('IEEE' if j.startswith('IEEE') else '') or '')
 def slug(s): return re.sub(r'[^a-z0-9]+', '-', s.lower()).strip('-')
 def series(e):
-    """Conference series (id, label) from booktitle: venues.yml alias > acronym in last (...) > leading ACRONYM 20xx."""
+    """Conference series (id, label) from booktitle: publications.yml series alias > acronym in last (...) > leading ACRONYM 20xx."""
     b = clean(e.get('booktitle', '')) 
     if not b: return None
     for sid, s in SERIES.items():
