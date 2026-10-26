@@ -126,13 +126,23 @@ section + section { border-top: 1px solid var(--border); margin-top: 2rem; }
   color: var(--fg-muted); text-decoration: none; font-size: .95rem; white-space: nowrap; }
 .site-nav a.nav-link:hover { background: var(--bg-hover); color: var(--fg); }
 .site-nav a.nav-link[aria-current="page"] { color: var(--fg); background: var(--bg-soft); font-weight: 600; }
-@media (max-width: 30rem) { .site-nav .brand { display: none; } .site-nav ul { margin-left: 0; } }
-/* theme toggle (sun/moon) — right end of the nav bar */
-.theme-toggle { flex: none; display: inline-grid; place-items: center; width: 2.25rem; height: 2.25rem; margin-left: .25rem; padding: 0;
+/* Phones: two rows — name + theme toggle, then the full menu (nothing cut off). */
+@media (max-width: 30rem) {
+  :root { --nav-h: 5.4rem; }
+  .site-nav .container { flex-wrap: wrap; gap: 0 .5rem; padding-block: .3rem .25rem; }
+  .site-nav .brand { line-height: 2.25rem; }
+  .site-nav ul { order: 3; flex: 1 0 100%; margin: 0; justify-content: space-between; }
+  .site-nav a.nav-link { padding: .35rem .45rem; }
+  .site-nav .theme-toggle { margin-left: 0; }
+}
+@media (max-width: 23.5rem) { .site-nav a.nav-link { padding: .35rem .3rem; font-size: .9rem; } }
+/* theme toggle (sun/moon) — right after the name, left of the nav bar */
+.theme-toggle { flex: none; display: inline-grid; place-items: center; width: 2.1rem; height: 2.1rem; margin-left: -.4rem; padding: 0;
   border: 1px solid var(--border); border-radius: 999px; background: transparent; color: var(--fg-muted); cursor: pointer; }
 .theme-toggle[hidden] { display: none; }
 .theme-toggle:hover { color: var(--fg); background: var(--bg-hover); }
 .theme-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.theme-toggle svg { display: block; }
 .theme-toggle .i-sun, .theme-toggle[aria-pressed="true"] .i-moon { display: none; }
 .theme-toggle[aria-pressed="true"] .i-sun { display: block; }
 

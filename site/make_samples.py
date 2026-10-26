@@ -130,8 +130,10 @@ HEAD = {'num': '#', 'year': 'Year', 'date': 'Date', 'title': 'Title &amp; author
 NAV_ITEMS = [('index.html', 'About'), ('publications.html', 'Publications'), ('projects.html', 'Projects'), ('supervision.html', 'Supervision')]
 # Theme: default follows prefers-color-scheme; an explicit choice (toggle) is stored in localStorage and set as
 # <html data-theme="light|dark">. Applied in <head> before first paint (no flash). Without JS the button stays hidden.
+import hashlib   # cache-busting: ?v=<hash of style.css + site.js> so HTML and assets never mismatch
+ASSET_V = hashlib.sha1(open('style.css', 'rb').read() + open('site.js', 'rb').read()).hexdigest()[:8]
 THEME_HEAD = ('<script>try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>\n'
-              '  <link rel="stylesheet" href="style.css">')
+              f'  <link rel="stylesheet" href="style.css?v={ASSET_V}">')
 THEME_BTN = ('<button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to dark mode" aria-pressed="false" hidden>'
              '<svg class="i-moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
              '<svg class="i-sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g></svg>'
@@ -144,7 +146,7 @@ THEME_BTN = ('<button type="button" class="theme-toggle" id="theme-toggle" aria-
 
 def nav(cur):
     li = ''.join(f'<li><a class="nav-link" href="{h}"{" aria-current=" + chr(34) + "page" + chr(34) if h == cur else ""}>{t}</a></li>' for h, t in NAV_ITEMS)
-    return f'<nav class="site-nav" aria-label="Main">\n  <div class="container{" wide" if cur == "publications.html" else ""}">\n    <a class="brand" href="index.html">{E_(HOME["site"]["name"])}</a>\n    <ul>{li}</ul>\n    {THEME_BTN}\n  </div>\n</nav>'
+    return f'<nav class="site-nav" aria-label="Main">\n  <div class="container{" wide" if cur == "publications.html" else ""}">\n    <a class="brand" href="index.html">{E_(HOME["site"]["name"])}</a>\n    {THEME_BTN}\n    <ul>{li}</ul>\n  </div>\n</nav>'
 
 def footer(wide=False):
     return (f'<footer class="site-footer">\n  <div class="container{" wide" if wide else ""}">'
@@ -195,7 +197,7 @@ for s in CFG:
     </div>
     <p class="empty-msg muted" hidden>No {E_(s["heading"].lower())} match the filters.</p>
   </section>''')
-page = (open('publications.tpl.html').read().replace('{{THEME_HEAD}}', THEME_HEAD).replace('{{NAV}}', nav('publications.html')).replace('{{CHIPS}}', '\n      '.join(chips))
+page = (open('publications.tpl.html').read().replace('{{THEME_HEAD}}', THEME_HEAD).replace('src="site.js"', f'src="site.js?v={ASSET_V}"').replace('{{NAV}}', nav('publications.html')).replace('{{CHIPS}}', '\n      '.join(chips))
         .replace('{{SECTIONS}}', '\n\n'.join(blocks)).replace('{{FOOTER}}', footer(True)).replace('{{TOTAL}}', str(total)))
 open(os.path.join(OUT, 'publications.html'), 'w').write(page)
 
