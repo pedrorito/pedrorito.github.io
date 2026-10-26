@@ -7,6 +7,7 @@ Production: export_md.py writes content/*.md with YAML front matter and build.py
 cell/row logic below is what those templates do."""
 import html, json, os, re, collections, yaml
 from bibmini import parse, clean, latex2html as L
+from icons import icon_svg   # contact-link icons (inline SVG, currentColor)
 CV = os.path.join(os.environ.get('CV_DIR', '/workspace/overleaf-cv'), '')      # checkout of the private CV repo
 OUT = os.environ.get('OUT_DIR', '.')                                         # _site/ in CI
 os.makedirs(OUT, exist_ok=True)
@@ -24,6 +25,7 @@ ORDER = {lab: re.findall(r'\\pub\{([^}]+)\}', body)
 PROJ_ORDER = {}
 for head, body in re.findall(r'\\subsubsection\{(Ongoing|Finished) projects\}(.*?)(?=\\subsubsection|\\section|\\end\{document\})', tex_nc, re.S):
     PROJ_ORDER[head.lower()] = re.findall(r'\\project\{([^}]+)\}', body)
+LISTED_PROJECTS = {k for ks in PROJ_ORDER.values() for k in ks}   # projects with a row (anchor) on projects.html
 E_ = html.escape
 MONTHS = 'Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec'.split()
 STATUS = {'published': 'Published', 'accepted': 'Accepted', 'submitted': 'Submitted', 'inpress': 'In press'}
@@ -110,8 +112,10 @@ def cell(col, e, n):
             j = J.get(p, {})
             if p == 'fct':
                 out.append(f'<span class="badge funder" title="Funded by {E_(clean(j.get("title", "FCT")))}">FCT</span>')
+            elif p in LISTED_PROJECTS:   # link only to projects that have a row on projects.html (no dead anchors)
+                out.append(f'<a class="badge project" data-project="{p}" href="projects.html#{p}" title="{E_(clean(j.get("title", p)))}">{E_(plabel(p))}</a>')
             else:
-                out.append(f'<a class="badge project" href="projects.html#{p}" title="{E_(clean(j.get("title", p)))}">{E_(plabel(p))}</a>')
+                out.append(f'<span class="badge project" data-project="{p}" title="{E_(clean(j.get("title", p)))}">{E_(plabel(p))}</span>')
         return 'c-projects', 'Projects', ('<div class="badges">' + ''.join(out) + '</div>') if out else NA
     if col == 'links':
         Ls = [f'<a href="https://doi.org/{E_(e["doi"])}">DOI</a>'] if e.get('doi') else ([f'<a href="{E_(e["url"])}">Link</a>'] if e.get('url') else [])
@@ -149,6 +153,15 @@ def nav(cur):
     li = ''.join(f'<li><a class="nav-link" href="{h}"{" aria-current=" + chr(34) + "page" + chr(34) if h == cur else ""}>{t}</a></li>' for h, t in NAV_ITEMS)
     return f'<nav class="site-nav" aria-label="Main">\n  <div class="container{" wide" if cur == "publications.html" else ""}">\n    <a class="brand" href="index.html">{E_(HOME["site"]["name"])}</a>\n    {THEME_BTN}\n    <ul>{li}</ul>\n  </div>\n</nav>'
 
+# ---------- shared page components (used by EVERY page; new pages get them for free) ----------
+# chip_nav(items, label): the in-page section menu ("chips" row). ONE markup + ONE CSS class (.chips in style.css):
+# wraps onto the next line on phones, never scrolls sideways. items = [(href, text, count|None, data_for|None), ...]
+def chip_nav(items, label='Sections'):
+    li = ''.join(f'<li><a class="chip" href="{E_(h)}">{E_(t)}'
+                 + ('' if n is None else f' <span class="chip-count"{f" data-for={chr(34)}{d}{chr(34)}" if d else ""}>{n}</span>')
+                 + '</a></li>' for h, t, n, d in ((list(i) + [None, None])[:4] for i in items))
+    return f'<nav class="chips" aria-label="{E_(label)}"><ul>{li}</ul></nav>'
+
 def footer(wide=False):
     return (f'<footer class="site-footer">\n  <div class="container{" wide" if wide else ""}">'
             f'<p class="copyright">&copy; {YEAR} {E_(HOME["footer"]["copyright"])}</p></div>\n</footer>')
@@ -157,7 +170,7 @@ def footer(wide=False):
 chips, blocks, total, empty = [], [], 0, {}
 for s in CFG:
     keys = ORDER.get(s['id'], []); N = len(keys); total += N
-    chips.append(f'<li><a class="chip" href="#{s["id"]}">{E_(s["heading"])} <span class="chip-count" data-for="{s["id"]}">{N}</span></a></li>')
+    chips.append((f'#{s["id"]}', s['heading'], N, s['id']))
     rows, cnt = [], collections.Counter()
     for i, k in enumerate(keys):
         e = P[k]; n = i + 1
@@ -198,7 +211,7 @@ for s in CFG:
     </div>
     <p class="empty-msg muted" hidden>No {E_(s["heading"].lower())} match the filters.</p>
   </section>''')
-page = (open('publications.tpl.html').read().replace('{{THEME_HEAD}}', THEME_HEAD).replace('src="site.js"', f'src="site.js?v={ASSET_V}"').replace('{{NAV}}', nav('publications.html')).replace('{{CHIPS}}', '\n      '.join(chips))
+page = (open('publications.tpl.html').read().replace('{{THEME_HEAD}}', THEME_HEAD).replace('src="site.js"', f'src="site.js?v={ASSET_V}"').replace('{{NAV}}', nav('publications.html')).replace('{{SECTION_NAV}}', chip_nav(chips, 'Sections'))
         .replace('{{SECTIONS}}', '\n\n'.join(blocks)).replace('{{FOOTER}}', footer(True)).replace('{{TOTAL}}', str(total)))
 open(os.path.join(OUT, 'publications.html'), 'w').write(page)
 
@@ -259,14 +272,14 @@ def proj_card(k):
     desc = L(j['title']) if j.get('title') else ''
     b = ''.join(f'<span class="badge">{E_(x)}</span>' for x in (funder, start + '–' if start else '') if x)
     return f'      <article class="card"><h3>{h}</h3>' + (f'<p>{desc}</p>' if desc else '') + f'<div class="badges">{b}</div></article>'
-anchors = ''.join(f'<li><a class="chip" href="#{a["id"]}">{E_(a["label"])}</a></li>' for a in H['anchors'])
+anchors = chip_nav([(f'#{a["id"]}', a['label']) for a in H['anchors']], 'On this page')
 groups = ''.join(f'<div class="contact-group"><h3>{E_(g["label"])}</h3><ul class="links">' + ''.join(
-    f'<li><a{" rel=" + chr(34) + "me" + chr(34) if l.get("rel_me") else ""} href="{E_(l["url"])}">{E_(l["label"])}</a></li>' for l in g['links']) + '</ul></div>' for g in C['groups'])
+    f'<li><a{" rel=" + chr(34) + "me" + chr(34) if l.get("rel_me") else ""} href="{E_(l["url"])}">{icon_svg(l["url"], l.get("icon"))}<span>{E_(l["label"])}</span></a></li>' for l in g['links']) + '</ul></div>' for g in C['groups'])
 contact = ('    <div class="contact-grid">\n'
            f'      <div class="contact-group"><h3>Address</h3>' + ''.join(f'<p>{E_(a)}</p>' for a in C['affiliation']) + '</div>\n      ' + groups + '\n    </div>')
 idx = open('index.tpl.html').read()
 for k, v in {'{{THEME_HEAD}}': THEME_HEAD, '{{NAV}}': nav('index.html'), '{{NAME}}': E_(site['name']), '{{DESCRIPTION}}': E_(site['description']),
-             '{{HEADLINE}}': site['headline'], '{{BIO}}': bio, '{{ANCHORS}}': anchors, '{{TOPICS}}': '\n'.join(topics), '{{RESEARCH_NOTE}}': research_note, '{{IMG}}': site['image'].rsplit('-', 1)[0],
+             '{{HEADLINE}}': site['headline'], '{{BIO}}': bio, '{{SECTION_NAV}}': anchors, '{{TOPICS}}': '\n'.join(topics), '{{RESEARCH_NOTE}}': research_note, '{{IMG}}': site['image'].rsplit('-', 1)[0],
              '{{GLANCE}}': '\n'.join('      ' + g for g in glance), '{{ONGOING}}': '\n'.join(proj_card(k) for k in on),
              '{{OUTSIDE}}': H['outside_lab']['html'], '{{FOOTER}}': footer(), '{{CONTACT}}': contact,
              '{{JSONLD}}': '\n'.join('  ' + l for l in json.dumps(jsonld, ensure_ascii=False, indent=2).splitlines())}.items():
@@ -278,6 +291,34 @@ print('bio from:', bio_src, '| ongoing:', on, '| projects', len(on), '+', len(fi
 unl = sorted({clean(P[k]['journal']) for k in pubs_listed if P[k].get('journal') and clean(P[k]['journal']) not in JOURNALS})
 print('journals without URL:', unl)
 print('venue series:', sorted({series(P[k]) for k in ORDER['conferences']}));print( len({series(P[k])[0] for k in ORDER['conferences']}), sorted(collections.Counter(series(P[k])[0] for k in ORDER['conferences']).items(), key=lambda x: -x[1])[:12])
+
+# page_shell(): full HTML page (head with theme script + fingerprinted CSS, shared nav, h1, intro, chip_nav, footer).
+# HOW TO ADD A PAGE: build `body` (sections with id="..."), then
+#   open(os.path.join(OUT, 'new.html'), 'w').write(page_shell('Title', 'new.html', body, 'Meta description',
+#        intro='<p class="muted">…</p>', sections=[('#a', 'Section A', 3), ('#b', 'Section B')], wide=True))
+# and add ('new.html', 'Title') to NAV_ITEMS for the top menu. Nav, theme toggle, chips and footer are then identical to the other pages.
+def page_shell(title, cur, body, desc, wide=False, intro='', sections=None):
+    menu = f'  {chip_nav(sections)}\n' if sections else ''
+    return f'''<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{E_(title)} — Pedro Rito</title>
+  <meta name="description" content="{E_(desc)}">
+  {THEME_HEAD}
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+{nav(cur)}
+<main id="main" class="container{" wide" if wide else ""}">
+  <h1>{E_(title)}</h1>
+{intro}{menu}{body}
+</main>
+{footer(wide)}
+</body>
+</html>
+'''
 
 import subpages  # noqa: E402,F401  projects.html, supervision.html, bib/<key>.bib
 

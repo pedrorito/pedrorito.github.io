@@ -1,43 +1,21 @@
 """projects.html, supervision.html and per-entry bib/<key>.bib. Imported at the end of make_samples.py (shares its state)."""
 import os, collections
-from __main__ import *          # P, J, CV, OUT, HOME, nav, footer, plabel, projs, authors, fmt_date, L, E_, NA, on, fin, pubs_listed
+from __main__ import *          # P, J, CV, OUT, HOME, page_shell, chip_nav, plabel, projs, authors, fmt_date, L, E_, NA, on, fin, pubs_listed
 from bibmini import parse
 
-def page_shell(title, cur, body, desc, wide=False):
-    return f'''<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{E_(title)} — Pedro Rito</title>
-  <meta name="description" content="{E_(desc)}">
-  {THEME_HEAD}
-</head>
-<body>
-<a class="skip-link" href="#main">Skip to content</a>
-{nav(cur)}
-<main id="main" class="container{" wide" if wide else ""}">
-{body}
-</main>
-{footer(wide)}
-</body>
-</html>
-'''
 def period(d):
     if not d: return NA
     a, _, b = d.partition('/')
     return f'{fmt_date(a)} – {fmt_date(b) if b else "present"}'
 
 # ---------- projects.html: main.tex order + projects.bib (funding amounts deliberately not shown) ----------
-pub_by_proj = collections.Counter(p for k in pubs_listed for p in projs(P[k]))
 def proj_row(k):
-    j = J[k]; n = pub_by_proj.get(k, 0)
+    j = J[k]
     head = f'<span class="title">{E_(plabel(k))}</span>' + (f'<span class="authors">{L(j["title"])}</span>' if j.get('title') else '')
     det = ''.join(f'<p><strong>{lab}:</strong> {L(j[f])}</p>' for f, lab in
                   (('summary', 'Summary'), ('contribution', 'My contribution'), ('programme', 'Programme'), ('grantnumber', 'Grant')) if j.get(f))
     if det: head += f'<details><summary>Details</summary>{det}</details>'
-    links = ' · '.join(([f'<a href="{E_(j["url"])}">Website</a>'] if j.get('url') else []) +
-                       ([f'<a href="publications.html?project={k}">{n} publication{"s" if n != 1 else ""}</a>'] if n else []))
+    links = f'<a href="{E_(j["url"])}">Website</a>' if j.get('url') else ''   # no project->publications link (only publications->projects)
     return (f'      <tr id="{k}"><td class="c-title" data-label="Project">{head}</td>'
             f'<td class="c-small" data-label="Period">{period(j.get("date"))}</td>'
             f'<td class="c-venue" data-label="Funder">{L(j.get("funder")) or NA}</td>'
@@ -56,12 +34,9 @@ def proj_table(hid, heading, keys):
     </table>
     </div>
   </section>'''
-body = (f'  <h1>Projects</h1>\n  <p class="muted">{len(on) + len(fin)} projects, in the same order as my CV. Each project links to its publications.</p>\n'
-        '  <nav class="chips" aria-label="Sections"><ul>'
-        f'<li><a class="chip" href="#ongoing">Ongoing <span class="chip-count">{len(on)}</span></a></li>'
-        f'<li><a class="chip" href="#finished">Finished <span class="chip-count">{len(fin)}</span></a></li></ul></nav>\n'
-        + proj_table('ongoing', 'Ongoing projects', on) + '\n' + proj_table('finished', 'Finished projects', fin))
-open(os.path.join(OUT, 'projects.html'), 'w').write(page_shell('Projects', 'projects.html', body, 'Research projects of Pedro Rito.', wide=True))
+body = (proj_table('ongoing', 'Ongoing projects', on) + '\n' + proj_table('finished', 'Finished projects', fin))
+open(os.path.join(OUT, 'projects.html'), 'w').write(page_shell('Projects', 'projects.html', body, 'Research projects of Pedro Rito.', wide=True,
+    sections=[('#ongoing', 'Ongoing', len(on)), ('#finished', 'Finished', len(fin))]))
 
 # ---------- supervision.html: CV supervision.bib (empty state until it exists) ----------
 SUP = parse(CV + 'supervision.bib') if os.path.exists(CV + 'supervision.bib') else {}
@@ -88,11 +63,10 @@ def sup_table(hid, heading, entries):
   </section>'''
 G = [('phd', 'PhD theses', 'phdthesis'), ('msc', 'MSc theses', 'mathesis'), ('scholarships', 'Research scholarships', 'scholarship')]
 by = {t: sorted([e for e in SUP.values() if e.get('type') == t], key=lambda e: e.get('date', ''), reverse=True) for _, _, t in G}
-body = ('  <h1>Supervision</h1>\n  <p class="muted">PhD and MSc theses I (co)supervise or supervised, and research scholarships, from my CV.</p>\n'
-        + ('' if SUP else '  <p class="sample-banner"><strong>Preview.</strong> <code>supervision.bib</code> does not exist in the CV repository yet, so the tables are empty.</p>\n')
-        + '  <nav class="chips" aria-label="Sections"><ul>' + ''.join(f'<li><a class="chip" href="#{h}">{t} <span class="chip-count">{len(by[k])}</span></a></li>' for h, t, k in G) + '</ul></nav>\n'
-        + '\n'.join(sup_table(h, t, by[k]) for h, t, k in G))
-open(os.path.join(OUT, 'supervision.html'), 'w').write(page_shell('Supervision', 'supervision.html', body, 'Theses and scholarships supervised by Pedro Rito.', wide=True))
+body = ('\n'.join(sup_table(h, t, by[k]) for h, t, k in G))
+open(os.path.join(OUT, 'supervision.html'), 'w').write(page_shell('Supervision', 'supervision.html', body, 'Theses and scholarships supervised by Pedro Rito.', wide=True,
+    intro=('' if SUP else '  <p class="sample-banner"><strong>Preview.</strong> <code>supervision.bib</code> does not exist in the CV repository yet, so the tables are empty.</p>\n'),
+    sections=[(f'#{h}', t, len(by[k])) for h, t, k in G]))
 
 # ---------- bib/<key>.bib: per-entry BibTeX re-emitted with STANDARD fields only ----------
 # Never the raw CV files: custom fields (projects, award, pubstate, keywords, note, …) and % comments are dropped.

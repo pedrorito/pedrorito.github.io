@@ -13,7 +13,7 @@
   uniq(rows.map(r => r.dataset.year)).sort().reverse()
     .forEach(v => f('year').add(new Option(v === 'in-review' ? 'Submitted / accepted (no date)' : v, v)));
   // Project (labels = chip short titles; fct = funder)
-  const pLabel = k => { const b = document.querySelector(`.c-projects a.badge.project[href$="#${k}"]`); return b ? b.textContent : (k === 'fct' ? 'FCT (funder)' : k); };
+  const pLabel = k => { const b = document.querySelector(`.c-projects .badge.project[data-project="${k}"]`); return b ? b.textContent : (k === 'fct' ? 'FCT (funder)' : k); };
   uniq(rows.flatMap(r => r.dataset.projects.split(' '))).map(k => [k, pLabel(k)])
     .sort((a, b) => a[1].localeCompare(b[1])).forEach(([k, l]) => f('project').add(new Option(l, k)));
   // Journal / venue: one select, two optgroups; value "journal:<slug>" or "venue:<id>"

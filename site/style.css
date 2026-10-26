@@ -120,8 +120,7 @@ section + section { border-top: 1px solid var(--border); margin-top: 2rem; }
 .site-nav .container { display: flex; align-items: center; gap: 1rem; min-height: var(--nav-h); }
 .site-nav .brand { font-weight: 700; color: var(--fg); text-decoration: none; white-space: nowrap; }
 .site-nav ul { display: flex; gap: .25rem; list-style: none; margin: 0 0 0 auto; padding: 0;
-  overflow-x: auto; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
-.site-nav ul::-webkit-scrollbar { display: none; }
+  flex-wrap: wrap; justify-content: flex-end; }   /* wraps instead of scrolling horizontally */
 .site-nav a.nav-link { display: block; padding: .4rem .65rem; border-radius: var(--radius-sm);
   color: var(--fg-muted); text-decoration: none; font-size: .95rem; white-space: nowrap; }
 .site-nav a.nav-link:hover { background: var(--bg-hover); color: var(--fg); }
@@ -131,7 +130,7 @@ section + section { border-top: 1px solid var(--border); margin-top: 2rem; }
   :root { --nav-h: 5.4rem; }
   .site-nav .container { flex-wrap: wrap; gap: 0 .5rem; padding-block: .3rem .25rem; }
   .site-nav .brand { line-height: 2.25rem; }
-  .site-nav ul { order: 3; flex: 1 0 100%; margin: 0; justify-content: space-between; }
+  .site-nav ul { order: 3; flex: 1 0 100%; margin: 0; justify-content: space-between; row-gap: 0; }
   .site-nav a.nav-link { padding: .35rem .45rem; }
   .site-nav .theme-toggle { margin-left: 0; }
 }
@@ -169,6 +168,8 @@ section + section { border-top: 1px solid var(--border); margin-top: 2rem; }
   border: 1px solid var(--border); border-radius: 999px; text-decoration: none; color: var(--fg);
   font-size: .9rem; background: var(--bg); }
 .links a:hover { background: var(--bg-hover); border-color: var(--accent); }
+.links a .icon { flex: none; width: 1rem; height: 1rem; display: block; color: var(--fg-muted); }
+.links a:hover .icon { color: inherit; }
 
 /* ---------- 6. Cards & grids (index section tiles, projects) ---------- */
 .grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fill, minmax(min(100%, 16rem), 1fr)); }
@@ -226,7 +227,8 @@ a.badge.project:hover  { border-color: var(--accent); color: var(--accent); }
 .card .badge { border-color: var(--border); background: var(--bg); }
 .badges { display: flex; flex-wrap: wrap; gap: .3rem; }
 
-/* ---------- 7b. Section chips (jump links with counts; also the homepage anchor nav) ---------- */
+/* ---------- 7b. Section chips — the ONE shared in-page menu (chip_nav() in the generator, every page) ----------
+   Always wraps onto the next line; never scrolls sideways. */
 .chips ul { display: flex; flex-wrap: wrap; gap: .4rem; list-style: none; padding: 0; margin: 1rem 0; }
 .chip { display: inline-flex; align-items: center; gap: .45rem; padding: .3rem .4rem .3rem .8rem;
   border: 1px solid var(--border); border-radius: 999px; background: var(--bg); color: var(--fg);
@@ -238,10 +240,9 @@ a.badge.project:hover  { border-color: var(--accent); color: var(--accent); }
   font-size: .78rem; font-weight: 600; text-align: center; font-variant-numeric: tabular-nums; line-height: 1.6; }
 .count-pill { font-size: .8rem; vertical-align: .25em; margin-left: .25rem; }
 .chip.is-empty { opacity: .45; }
-@media (max-width: 40rem) {   /* one horizontally-scrolling row on phones */
-  .chips ul { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: .2rem; margin-inline: calc(-1 * var(--space)); padding-inline: var(--space); }
-  .chips ul::-webkit-scrollbar { display: none; }
-  .chips .chip { white-space: nowrap; }
+@media (max-width: 40rem) {   /* phones: chips wrap onto the next line (no horizontal scrolling) */
+  .chips ul { gap: .35rem; }
+  .chips .chip { white-space: nowrap; max-width: 100%; }
 }
 
 /* ---------- 8. Filters (progressive enhancement; hidden without JS) ---------- */
@@ -251,6 +252,8 @@ a.badge.project:hover  { border-color: var(--accent); color: var(--accent); }
   font: inherit; font-size: .95rem; color: var(--fg); background: var(--bg);
   border: 1px solid var(--border); border-radius: var(--radius-sm); padding: .4rem .6rem; min-height: 2.4rem; }
 .filters input[type="search"] { min-width: min(100%, 16rem); }
+.filters label { min-width: 0; max-width: 100%; }
+.filters select { width: 100%; max-width: 100%; min-width: 0; text-overflow: ellipsis; }
 .filters label.check { display: flex; gap: .4rem; align-items: center; font-size: .9rem; color: var(--fg); min-height: 2.4rem; }
 .filters .btn-reset { font: inherit; font-size: .9rem; min-height: 2.4rem; padding: .4rem .8rem; border-radius: var(--radius-sm);
   border: 1px solid var(--border); background: var(--bg-soft); color: var(--fg); cursor: pointer; }
@@ -317,7 +320,8 @@ table.data td.c-year { white-space: nowrap; }
   .table-wrap { border: 0; border-radius: 0; overflow: visible; }
   table.data, table.data tbody, table.data tr, table.data td { display: block; width: 100%; }
   table.data caption { display: block; border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: .75rem; }
-  table.data thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  table.data thead { display: none; }   /* cards carry their own labels (data-label) */
+  table.data td, table.data td.c-small, table.data td.c-links, table.data td.c-year { white-space: normal; overflow-wrap: anywhere; }
   table.data tbody tr { background: var(--bg-soft); border: 1px solid var(--border); border-radius: var(--radius);
     padding: .7rem .9rem; margin-bottom: .75rem; box-shadow: var(--shadow); }
   table.data tbody tr + tr td { border-top: 0; }

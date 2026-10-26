@@ -53,6 +53,8 @@ contact:
   affiliation:
     - Instituto de Telecomunicações (IT), Campus Universitário de Santiago, 3810-193 Aveiro, Portugal
   groups:                                # rel_me: true -> rel="me" + schema.org sameAs
+  # optional per link: icon: googlescholar|orcid|researchgate|github|linkedin|x|youtube|instagram|facebook|bluesky|mastodon|globe|link
+  # (default: detected from the URL domain; unknown domains get a generic link icon)
     - label: Research profiles
       links:
         - {label: Google Scholar, url: "https://scholar.google.com/citations?user=MSMBYVwAAAAJ", rel_me: true}
