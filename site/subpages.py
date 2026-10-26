@@ -38,8 +38,8 @@ body = (proj_table('ongoing', 'Ongoing projects', on) + '\n' + proj_table('finis
 open(os.path.join(OUT, 'projects.html'), 'w').write(page_shell('Projects', 'projects.html', body, 'Research projects of Pedro Rito.', wide=True,
     sections=[('#ongoing', 'Ongoing', len(on)), ('#finished', 'Finished', len(fin))]))
 
-# ---------- supervision.html: CV supervision.bib (empty state until it exists) ----------
-SUP = parse(CV + 'supervision.bib') if os.path.exists(CV + 'supervision.bib') else {}
+# ---------- supervision.html: CV supervision.bib, only PhD/MSc (publications.yml `supervision.types`) ----------
+# SUP (already filtered to the allowed types), SUP_TYPES, sup_type come from make_samples.py
 def sup_row(e):
     chips = ''.join(f'<a class="badge project" href="projects.html#{p}">{E_(plabel(p))}</a>' for p in projs(e))
     return (f'      <tr id="{e["_key"]}"><td class="c-year" data-label="Period">{period(e.get("date"))}</td>'
@@ -61,12 +61,11 @@ def sup_table(hid, heading, entries):
 {chr(10).join(sup_row(e) for e in entries)}
       </tbody></table></div>
   </section>'''
-G = [('phd', 'PhD theses', 'phdthesis'), ('msc', 'MSc theses', 'mathesis'), ('scholarships', 'Research scholarships', 'scholarship')]
-by = {t: sorted([e for e in SUP.values() if e.get('type') == t], key=lambda e: e.get('date', ''), reverse=True) for _, _, t in G}
+G = [(t['id'], t['heading'], t['type']) for t in SUP_TYPES]
+by = {t: sorted([e for e in SUP.values() if sup_type(e) == t], key=lambda e: e.get('date', ''), reverse=True) for _, _, t in G}
 body = ('\n'.join(sup_table(h, t, by[k]) for h, t, k in G))
-open(os.path.join(OUT, 'supervision.html'), 'w').write(page_shell('Supervision', 'supervision.html', body, 'Theses and scholarships supervised by Pedro Rito.', wide=True,
-    intro=('' if SUP else '  <p class="sample-banner"><strong>Preview.</strong> <code>supervision.bib</code> does not exist in the CV repository yet, so the tables are empty.</p>\n'),
-    sections=[(f'#{h}', t, len(by[k])) for h, t, k in G]))
+open(os.path.join(OUT, 'supervision.html'), 'w').write(page_shell('Supervision', 'supervision.html', body, 'PhD and MSc theses supervised by Pedro Rito.', wide=True,
+        sections=[(f'#{h}', t, len(by[k])) for h, t, k in G]))
 
 # ---------- bib/<key>.bib: per-entry BibTeX re-emitted with STANDARD fields only ----------
 # Never the raw CV files: custom fields (projects, award, pubstate, keywords, note, …) and % comments are dropped.
@@ -75,4 +74,4 @@ os.makedirs(os.path.join(OUT, 'bib'), exist_ok=True)
 for k in pubs_listed:
     e = P[k]; fs = ',\n'.join(f'  {f} = {{{e[f]}}}' for f in PUBLIC if e.get(f))
     open(os.path.join(OUT, 'bib', k + '.bib'), 'w').write(f'@{e["_type"]}{{{k},\n{fs}\n}}\n')
-print('projects.html:', len(on), '+', len(fin), '| supervision.html entries:', len(SUP), '| bib files:', len(pubs_listed))
+print('projects.html:', len(on), '+', len(fin), '| supervision.html entries:', len(SUP), 'of', len(SUP_ALL), '| bib files:', len(pubs_listed))

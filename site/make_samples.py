@@ -1,7 +1,7 @@
 """Preview builder (box only). Inputs:
   CV repo (generated data):  publications.bib, projects.bib, main.tex (publist/project order, \\begin{cvbio} bio),
-                             supervision.bib (optional, not yet in the repo)
-  Site repo (hand-edited):   home.yml, publications.yml (sections / journals / series)
+                             supervision.bib (only the types in publications.yml `supervision` are shown: PhD + MSc)
+  Site repo (hand-edited):   home.yml, publications.yml (sections / journals / series / supervision)
 Outputs: index.html, publications.html.
 Production: export_md.py writes content/*.md with YAML front matter and build.py renders Jinja2 templates; the
 cell/row logic below is what those templates do."""
@@ -254,10 +254,16 @@ cnt = {s['id']: len(ORDER.get(s['id'], [])) for s in CFG}
 short = {'journals': 'journal', 'conferences': 'conference', 'posters': 'posters', 'magazines': 'magazine', 'datasets': 'datasets'}
 pubs_listed = [k for s in CFG for k in ORDER.get(s['id'], [])]
 on, fin = PROJ_ORDER.get('ongoing', []), PROJ_ORDER.get('finished', [])
-sup_n = '—'; sup_note = 'MSc and PhD (co)supervision · from supervision.bib (not yet in the CV repo)'
-if os.path.exists(CV + 'supervision.bib'):
-    S = parse(CV + 'supervision.bib'); sup_n = str(len(S))
-    k_ = collections.Counter(e.get('type', e['_type']) for e in S.values()); sup_note = ' · '.join(f'{v} {k}' for k, v in k_.items())
+# Supervision: ONLY the types listed in publications.yml `supervision.types` (default PhD + MSc) reach the site;
+# other supervision.bib types (BSc, internships, scholarships, ...) stay CV-only. SUP is shared with subpages.py.
+SUP_TYPES = (PUBCFG.get('supervision') or {}).get('types') or [
+    {'type': 'phdthesis', 'id': 'phd', 'heading': 'PhD theses'}, {'type': 'mathesis', 'id': 'msc', 'heading': 'MSc theses'}]
+def sup_type(e): return (e.get('type') or e['_type']).strip().lower()
+SUP_ALL = parse(CV + 'supervision.bib') if os.path.exists(CV + 'supervision.bib') else {}
+SUP = {k: e for k, e in SUP_ALL.items() if sup_type(e) in {t['type'] for t in SUP_TYPES}}
+sup_n = str(len(SUP)) if SUP else '—'
+sup_note = (' · '.join(f'{n} {t["heading"].split()[0]}' for t in SUP_TYPES if (n := sum(sup_type(e) == t['type'] for e in SUP.values())))
+            if SUP else 'PhD and MSc (co)supervision')
 glance = [
     f'<a class="card" href="publications.html"><div class="stat">{sum(cnt.values())}</div><h3>Publications</h3><p class="muted">' + ' · '.join(f'{v} {short[k]}' for k, v in cnt.items()) + '</p></a>',
     f'<a class="card" href="projects.html"><div class="stat">{len(on) + len(fin)}</div><h3>Projects</h3><p class="muted">{len(on)} ongoing · {len(fin)} finished · {E_(H.get("glance_notes", {}).get("projects", ""))}</p></a>',

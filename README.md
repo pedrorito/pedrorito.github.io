@@ -15,3 +15,6 @@ to `NAV_ITEMS` in `make_samples.py`.
 
 Contact links on the homepage (`site/home.yml`) get an inline SVG icon (`site/icons.py`, simple-icons CC0 +
 hand-made); set `icon:` per link to override the automatic detection from the URL domain.
+
+Supervision: only the `supervision.bib` types listed under `supervision: types:` in `site/publications.yml`
+(default: PhD + MSc theses) appear on the site; other types (BSc, internships, scholarships, …) stay CV-only.

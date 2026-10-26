@@ -1,8 +1,9 @@
-# site/publications.yml — configuration of the publications page (hand-edited; the publication DATA itself comes from the
-# private CV repo: publications.bib / projects.bib / main.tex). One file, three top-level keys:
+# site/publications.yml — configuration of the publications (and supervision) pages (hand-edited; the DATA itself comes from the
+# private CV repo: publications.bib / projects.bib / supervision.bib / main.tex). One file, four top-level keys:
 #   sections  — the tables on publications.html (order, headings, columns, status filters)
 #   journals  — journal metadata keyed by the bib `journal` string (ISSN, publisher, homepage URL)
 #   series    — conference-series aliases for the ?venue= filter
+#   supervision — which supervision.bib types are shown on the site (supervision.html + homepage count)
 # (Merged from the former sections.yml, journals.yml and venues.yml.)
 
 # =====================================================================================================================
@@ -257,3 +258,14 @@ series:
   IoT:   {name: International Conference on the Internet of Things (IoT), match: 'International Conference on the Internet of Things'}
   ITS-WC: {name: ITS World Congress, match: 'ITS World Congress'}
   ITG-PN: {name: ITG-Fachtagung Photonische Netze, match: 'Photonische Netze'}
+
+# =====================================================================================================================
+# supervision
+# =====================================================================================================================
+# Only these supervision.bib `type` values appear on the website (supervision.html tables, chips and the homepage count).
+# Any other type (bsc, internship, scholarship, ...) stays in the CV but is filtered out of the site.
+# One table per entry, in this order. If this key is missing the generator defaults to exactly PhD + MSc.
+supervision:
+  types:
+    - {type: phdthesis, id: phd, heading: PhD theses}
+    - {type: mathesis,  id: msc, heading: MSc theses}
