@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Publications — Pedro Rito</title>
+  <meta name="description" content="Publications by Pedro Rito: journal articles, conference papers, posters, magazines and datasets.">
+  <link rel="stylesheet" href="style.css">
+  <script src="site.js" defer></script>
+</head>
+<body>
+<a class="skip-link" href="#main">Skip to content</a>
+{{NAV}}
+<main id="main" class="container wide">
+  <h1>Publications</h1>
+  <p class="muted">{{TOTAL}} publications, in the same sections and order as my CV (newest first; numbering restarts in each section).
+    Also on <a href="https://scholar.google.com/citations?user=MSMBYVwAAAAJ">Google Scholar</a> and <a href="https://orcid.org/0000-0002-1151-9268">ORCID</a>.</p>
+  <p class="sample-banner"><strong>Preview.</strong> Generated on the box from publications.bib + main.tex (2026-10-25); not published.</p>
+
+  <nav class="chips" aria-label="Sections">
+    <ul>
+      {{CHIPS}}
+    </ul>
+  </nav>
+
+  <form class="filters" hidden role="search" aria-label="Filter publications" onsubmit="return false">
+    <label class="grow">Search<input type="search" name="q" placeholder="Title, author, journal…"></label>
+    <label>Year<select name="year"><option value="">All years</option></select></label>
+    <label>Project<select name="project"><option value="">All projects</option></select></label>
+    <label>Journal / venue<select name="venue"><option value="">All journals &amp; venues</option></select></label>
+    <button type="reset" class="btn-reset">Clear</button>
+    <span class="count" aria-live="polite"></span>
+  </form>
+
+{{SECTIONS}}
+</main>
+{{FOOTER}}
+</body>
+</html>

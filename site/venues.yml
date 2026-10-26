@@ -1,0 +1,16 @@
+# Conference series aliases for the ?venue= filter. The generator derives a series from the bib `booktitle`
+# (acronym in the last parentheses, or a leading "NOMS 2023-..." style acronym); list here only the
+# booktitles that have no acronym or spell it differently. key = series id, match = regex on booktitle.
+series:
+  IMS:   {name: IEEE MTT-S International Microwave Symposium, match: 'International Microwave Symposium'}
+  OFC:   {name: Optical Fiber Communication Conference, match: 'Optical Fiber Communication Conference'}
+  ECOC:  {name: European Conference on Optical Communication, match: 'European Conference on Optical Communication'}
+  INFOCOM: {name: IEEE Conference on Computer Communications (INFOCOM), match: 'INFOCOM 20\d\d - IEEE Conference on Computer Communications$'}
+  NOMS:  {name: IEEE/IFIP Network Operations and Management Symposium, match: '^NOMS '}
+  INFOCOM-W: {name: IEEE INFOCOM Workshops, match: 'INFOCOM WKSHPS'}
+  MST:   {name: MikroSystemTechnik Kongress (MST), match: 'MikroSystemTechnik'}
+  CLEO:  {name: Conference on Lasers and Electro-Optics (CLEO), match: 'Lasers and Electro-Optics'}
+  AutomotiveUI: {name: ACM AutomotiveUI, match: 'Automotive User Interfaces'}
+  IoT:   {name: International Conference on the Internet of Things (IoT), match: 'International Conference on the Internet of Things'}
+  ITS-WC: {name: ITS World Congress, match: 'ITS World Congress'}
+  ITG-PN: {name: ITG-Fachtagung Photonische Netze, match: 'Photonische Netze'}

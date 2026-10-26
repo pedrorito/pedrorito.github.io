@@ -1,0 +1,195 @@
+# content/journals.yml — journal metadata keyed by the bib `journal` string (exact match).
+# ISSNs: Crossref /works/{doi} (or ISSN portal for the 3 journals whose only entries are submitted).
+# URLs: OpenAlex sources/issn:{issn} homepage_url, normalised to the current publisher pages; entries marked
+# "verify" are curated from Xplore punumbers / publisher patterns and should be clicked once before publishing.
+# `publisher` here wins over the DOI-prefix fallback; a `publisher` field in the bib entry wins over both.
+journals:
+- name: ACM Journal on Autonomous Transportation Systems
+  issn:
+  - 2833-0528
+  publisher: ACM
+  url: https://dl.acm.org/journal/jats
+  source: curated — verify
+- name: Ad Hoc Networks
+  issn:
+  - 1570-8705
+  - 1570-8713
+  publisher: Elsevier
+  url: https://www.sciencedirect.com/journal/ad-hoc-networks
+  source: OpenAlex
+- name: Analog Integrated Circuits and Signal Processing
+  issn:
+  - 0925-1030
+  - 1573-1979
+  publisher: Springer
+  url: https://link.springer.com/journal/10470
+  source: OpenAlex
+- name: Annals of Telecommunications
+  issn:
+  - 0003-4347
+  - 1958-9395
+  publisher: Springer
+  url: https://link.springer.com/journal/12243
+  source: OpenAlex
+- name: Applied Sciences
+  issn:
+  - 2076-3417
+  publisher: MDPI
+  url: https://www.mdpi.com/journal/applsci
+  source: OpenAlex
+- name: Computer Communications
+  issn:
+  - 0140-3664
+  - 1873-703X
+  publisher: Elsevier
+  url: https://www.sciencedirect.com/journal/computer-communications
+  source: OpenAlex (normalised)
+- name: Computer Networks
+  issn:
+  - 1389-1286
+  - 1872-7069
+  publisher: Elsevier
+  url: https://www.sciencedirect.com/journal/computer-networks
+  source: curated (OpenAlex URL is a dead legacy page)
+- name: Data in Brief
+  issn:
+  - 2352-3409
+  publisher: Elsevier
+  url: https://www.sciencedirect.com/journal/data-in-brief
+  source: OpenAlex (normalised)
+- name: Future Generation Computer Systems
+  issn:
+  - 0167-739X
+  - 1872-7115
+  publisher: Elsevier
+  url: https://www.sciencedirect.com/journal/future-generation-computer-systems
+  source: OpenAlex (normalised)
+- name: IEEE Access
+  issn:
+  - 2169-3536
+  publisher: IEEE
+  url: https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=6287639
+  source: OpenAlex
+- name: IEEE Communications Letters
+  issn:
+  - 1089-7798
+  - 1558-2558
+  - 2373-7891
+  publisher: IEEE
+  url: https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=4234
+  source: curated — verify (OpenAlex gives comsoc.org/CL)
+- name: IEEE Internet of Things Journal
+  issn:
+  - 2327-4662
+  - 2372-2541
+  publisher: IEEE
+  url: https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=6488907
+  source: OpenAlex
+- name: IEEE Journal of Solid-State Circuits
+  issn:
+  - 0018-9200
+  - 1558-173X
+  publisher: IEEE
+  url: https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=4
+  source: curated — verify (none in OpenAlex)
+- name: IEEE Microwave and Wireless Components Letters
+  issn:
+  - 1531-1309
+  - 1558-1764
+  publisher: IEEE
+  url: https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=7260
+  source: curated — verify (OpenAlex gives ieee.org home); journal renamed IEEE Microwave and Wireless Technology Letters in 2023
+- name: IEEE Networking Letters
+  issn:
+  - 2576-3156
+  publisher: IEEE
+  url: https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=8253410
+  source: OpenAlex
+- name: IEEE Open Journal of Intelligent Transportation Systems
+  issn:
+  - 2687-7813
+  publisher: IEEE
+  url: https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=8784355
+  source: OpenAlex
+- name: IEEE Photonics Technology Letters
+  issn:
+  - 1041-1135
+  - 1941-0174
+  publisher: IEEE
+  url: https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=68
+  source: OpenAlex
+- name: IEEE Solid-State Circuits Letters
+  issn:
+  - 2573-9603
+  publisher: IEEE
+  url: https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=8011414
+  source: OpenAlex
+- name: IEEE Transactions on Intelligent Transportation Systems
+  issn:
+  - 1524-9050
+  - 1558-0016
+  publisher: IEEE
+  url: https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=6979
+  source: OpenAlex
+- name: IEEE Transactions on Microwave Theory and Techniques
+  issn:
+  - 0018-9480
+  - 1557-9670
+  publisher: IEEE
+  url: https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=22
+  source: curated — verify (OpenAlex gives mtt.org)
+- name: IEEE Transactions on Services Computing
+  issn:
+  - 1939-1374
+  - 2372-0204
+  publisher: IEEE
+  url: https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=4629386
+  source: OpenAlex
+- name: IEEE Transactions on Vehicular Technology
+  issn:
+  - 0018-9545
+  - 1939-9359
+  publisher: IEEE
+  url: https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=25
+  source: curated — verify (none in OpenAlex)
+- name: International Journal of High Speed Electronics and Systems
+  issn:
+  - 0129-1564
+  - 1793-6438
+  publisher: World Scientific
+  url: https://www.worldscientific.com/worldscinet/ijhses
+  source: OpenAlex (normalised)
+- name: Journal of Lightwave Technology
+  issn:
+  - 0733-8724
+  - 1558-2213
+  publisher: IEEE / Optica
+  url: https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=50
+  source: curated — verify (co-published IEEE/Optica)
+- name: Mobile Networks and Applications
+  issn:
+  - 1383-469X
+  - 1572-8153
+  publisher: Springer
+  url: https://link.springer.com/journal/11036
+  source: OpenAlex
+- name: Pervasive and Mobile Computing
+  issn:
+  - 1574-1192
+  - 1873-1589
+  publisher: Elsevier
+  url: https://www.sciencedirect.com/journal/pervasive-and-mobile-computing
+  source: OpenAlex (normalised)
+- name: Sensors
+  issn:
+  - 1424-8220
+  publisher: MDPI
+  url: https://www.mdpi.com/journal/sensors
+  source: OpenAlex
+- name: Vehicular Communications
+  issn:
+  - 2214-2096
+  - 2214-210X
+  publisher: Elsevier
+  url: https://www.sciencedirect.com/journal/vehicular-communications
+  source: OpenAlex (normalised)

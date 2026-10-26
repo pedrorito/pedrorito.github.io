@@ -1,0 +1,74 @@
+# content/home.yml — homepage content that does NOT come from the CV (.tex/.bib). Hand-edited by Pedro.
+# From the CV, generated at build time (do NOT put here): bio paragraph (main.tex \begin{cvbio}),
+# publication/project/award/supervision counts, ongoing projects (main.tex order + projects.bib).
+site:
+  name: Pedro Rito
+  alternate_name: Pedro Filipe Vieira Rito
+  url: https://pedrorito.me/
+  image: img/pedro-rito-800.jpg   # hero photo (img/pedro-rito-{400,800}.{webp,jpg}); JSON-LD `image`
+  description: "Pedro Rito: researcher in circuit design and telecommunications & networks (IT Aveiro, University of Aveiro)."
+  # Hero second line (title). HTML allowed.
+  headline: 'Researcher · <a href="https://www.it.pt">Instituto de Telecomunicações (IT)</a>, Aveiro · <a href="https://www.ua.pt">University of Aveiro</a>'
+  knows_about: [Circuit design, Electro-optical transceivers, MMICs, Radio access networks, Vehicular networks, Telecommunications, Vehicular communications, Edge computing, Motorsport]
+
+# Homepage anchor chips (order = order of sections on the page).
+anchors:
+  - {id: research, label: Research}
+  - {id: highlights, label: At a glance}
+  - {id: projects, label: Ongoing projects}
+  - {id: contact, label: Contact}
+
+# Research topics. Each sub-topic `id` is a tag for the bib `keywords` field (e.g. keywords = {vehicular-networks, smart-cities}).
+# A chip links to publications.html?topic=<id> only when at least one listed publication carries that tag; otherwise it is plain text.
+# The area link ("All <area> publications") appears when any publication is tagged with one of its sub-topics (or the area id).
+# `summary` is optional (one line under the title).
+topics:
+  - id: circuits
+    title: Circuit design
+    subtopics:
+      - {id: electro-optical-transceivers, label: Electro-optical transceivers}
+      - {id: low-power-applications, label: Low-power applications}
+      - {id: mmics, label: MMICs}
+  - id: networks
+    title: Telecommunications & Networks
+    subtopics:
+      - {id: smart-cities, label: Smart cities}
+      - {id: autonomous-mobility, label: Autonomous mobility}
+      - {id: radio-access-networks, label: Radio access networks}
+      - {id: vehicular-networks, label: Vehicular networks}
+
+# Small "Outside the lab" line (Garagem Rito: neutral link, no role claims, no rel=me).
+outside_lab:
+  html: 'I''m passionate about motorsport, a passion that runs in the family and in our family business, <a href="https://garagemrito.pt">Garagem Rito</a>.'
+  related:   # neutral schema.org link (ProfilePage mentions/relatedLink + Organization)
+    name: Garagem Rito
+    url: https://garagemrito.pt/
+    same_as:          # public profiles linked from the garagemrito.pt footer (2026-10-25)
+      - https://www.facebook.com/garagemrito
+      - https://www.youtube.com/channel/UC0inEde_f_jYYSZOlmZC31Q
+
+# Contact section: ALL contact-type items live here (address, profiles, social). Nothing in the hero.
+# No email anywhere on the site (Pedro's decision): no mailto, no JSON-LD email.
+contact:
+  affiliation:
+    - Instituto de Telecomunicações (IT), Campus Universitário de Santiago, 3810-193 Aveiro, Portugal
+  groups:                                # rel_me: true -> rel="me" + schema.org sameAs
+    - label: Research profiles
+      links:
+        - {label: Google Scholar, url: "https://scholar.google.com/citations?user=MSMBYVwAAAAJ", rel_me: true}
+        - {label: ORCID, url: "https://orcid.org/0000-0002-1151-9268", rel_me: true}
+        - {label: ResearchGate, url: "https://www.researchgate.net/profile/Pedro-Rito", rel_me: true}
+        - {label: GitHub, url: "https://github.com/pedrorito", rel_me: true}
+    - label: Social
+      links:
+        - {label: LinkedIn, url: "https://www.linkedin.com/in/pedro-rito", rel_me: true}
+        - {label: X, url: "https://twitter.com/pedrofvrito", rel_me: true}
+        - {label: YouTube, url: "https://www.youtube.com/user/pedrofvrito", rel_me: true}
+
+# Short notes shown under the generated counts (optional, free text).
+glance_notes:
+  projects: "Horizon Europe, Chips JU, PRR, FCT"
+
+# Footer: only "© <current year> pedrorito.me" (same style of copyright line as garagemrito.pt).
+footer:
+  copyright: pedrorito.me

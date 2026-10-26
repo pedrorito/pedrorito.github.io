@@ -1,0 +1,30 @@
+# Publications page: one table per section, in this order (ids = publist labels in main.tex).
+# Entry order and membership come from main.tex (\pub{key} lines, newest first); numbering restarts per section.
+# Columns: any of  num, year, date, title, journal, publisher, volissue, pages, venue, event, location,
+#                  repository, projects, links
+#   title    = title + authors + status badge (Submitted/Accepted) + award badge
+#   projects = project chips (-> projects.html#key); `fct` = funder badge, not a project
+#   journal/venue = name (journal -> homepage from journals.yml) + filter tag (?journal= / ?venue=)
+# status_filter: per-table status options (bib `pubstate`; no pubstate = published). Omit = no status filter (e.g. magazines: published only).
+sections:
+  - id: journals
+    heading: Journal articles
+    columns: [num, year, title, journal, publisher, volissue, pages, projects, links]
+    status_filter: [published, submitted]
+  - id: conferences
+    heading: Conference papers
+    columns: [num, date, title, venue, location, projects, links]
+    status_filter: [published, accepted, submitted]
+  - id: posters
+    heading: Posters
+    note: Unpublished poster presentations (no proceedings).
+    columns: [num, date, title, event, location, projects, links]
+    status_filter: [published, accepted, submitted]
+  - id: magazines
+    heading: Magazines
+    columns: [num, date, title, venue, publisher, projects, links]
+  - id: datasets
+    heading: Datasets
+    note: Data articles and data records (Zenodo, Data in Brief).
+    columns: [num, date, title, repository, projects, links]
+    status_filter: [published, submitted]

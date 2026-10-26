@@ -1,0 +1,91 @@
+# Builds pedrorito.me from the private CV repo and deploys to GitHub Pages.
+# Builds pedrorito.me from the PRIVATE CV repo pedrorito/pedrorito-cv and deploys to GitHub Pages.
+# Repo layout:  CNAME, README.md, tw/ (untouched)  +  .github/workflows/build.yml  +  site/ (generator .py, *.yml, *.tpl.html, style.css, site.js, img/)
+# Secret: CV_REPO_TOKEN = fine-grained PAT, resource owner pedrorito, repository access "Only select repositories:
+#         pedrorito-cv", permissions Contents: Read-only (+ Metadata: Read-only, automatic). Nothing else. Expiry ≤ 1 year.
+# Only generated HTML/CSS/JS and re-emitted per-entry bib files are published; raw .tex/.bib never leave the runner.
+name: Build and deploy site
+
+on:
+  push:
+    branches: [main]            # site repo changes (templates, yml, generator)
+  workflow_dispatch:            # manual "Run workflow" button
+  schedule:
+    - cron: "17 4 * * *"        # nightly rebuild picks up CV changes (04:17 UTC)
+  repository_dispatch:
+    types: [cv-updated]         # optional: CV repo pings this on push (needs a separate token in the CV repo)
+  # NO pull_request / pull_request_target triggers: secrets are never exposed to fork PRs.
+
+permissions:
+  contents: read                # GITHUB_TOKEN: read this repo only
+  pages: write                  # deploy to Pages
+  id-token: write               # OIDC for deploy-pages
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    if: github.repository == 'pedrorito/pedrorito.github.io'   # never run on forks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout site repo
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Checkout private CV repo (read-only token)
+        uses: actions/checkout@v4
+        with:
+          repository: pedrorito/pedrorito-cv
+          token: ${{ secrets.CV_REPO_TOKEN }}
+          path: cv
+          persist-credentials: false       # token not left in .git/config
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install pyyaml==6.0.2
+
+      - name: Generate pages
+        working-directory: site
+        env:
+          CV_DIR: ${{ github.workspace }}/cv
+          OUT_DIR: ${{ github.workspace }}/_site
+          STRICT: "1"         # fail if main.tex has no \begin{cvbio} block (no placeholder bio in production)
+          PREVIEW: "0"        # strip "Preview." banners
+        run: python make_samples.py
+
+      - name: Assemble _site (static assets, CNAME, tw/ preserved verbatim)
+        run: |
+          cp site/style.css site/site.js _site/
+          cp -a site/img _site/img
+          cp CNAME _site/CNAME
+          cp -a tw _site/tw
+          touch _site/.nojekyll
+
+      - name: Guard - nothing raw from the CV repo is published
+        run: |
+          rm -rf cv
+          if find _site -name '*.tex' -o -name 'publications.bib' -o -name 'projects.bib' -o -name 'supervision.bib' | grep -q .; then
+            echo "raw CV source found in _site"; exit 1; fi
+          if grep -RqiE '^\s*(projects|pubstate|award|keywords|note)\s*=' _site/bib; then
+            echo "private/custom bib fields found in _site/bib"; exit 1; fi
+          test -f _site/CNAME && test -d _site/tw
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
