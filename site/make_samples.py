@@ -128,9 +128,23 @@ HEAD = {'num': '#', 'year': 'Year', 'date': 'Date', 'title': 'Title &amp; author
         'repository': 'Repository', 'projects': 'Projects', 'links': 'Links'}
 
 NAV_ITEMS = [('index.html', 'About'), ('publications.html', 'Publications'), ('projects.html', 'Projects'), ('supervision.html', 'Supervision')]
+# Theme: default follows prefers-color-scheme; an explicit choice (toggle) is stored in localStorage and set as
+# <html data-theme="light|dark">. Applied in <head> before first paint (no flash). Without JS the button stays hidden.
+THEME_HEAD = ('<script>try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>\n'
+              '  <link rel="stylesheet" href="style.css">')
+THEME_BTN = ('<button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to dark mode" aria-pressed="false" hidden>'
+             '<svg class="i-moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+             '<svg class="i-sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g></svg>'
+             '</button>\n'
+             '<script>(function(){var d=document.documentElement,b=document.getElementById("theme-toggle"),m=matchMedia("(prefers-color-scheme: dark)");'
+             'function cur(){return d.dataset.theme||(m.matches?"dark":"light")}'
+             'function sync(){var k=cur()==="dark";b.setAttribute("aria-pressed",k);b.setAttribute("aria-label",k?"Switch to light mode":"Switch to dark mode");b.title=b.getAttribute("aria-label")}'
+             'b.hidden=false;sync();m.addEventListener("change",sync);'
+             'b.addEventListener("click",function(){var t=cur()==="dark"?"light":"dark";d.dataset.theme=t;try{localStorage.setItem("theme",t)}catch(e){}sync()})})()</script>')
+
 def nav(cur):
     li = ''.join(f'<li><a class="nav-link" href="{h}"{" aria-current=" + chr(34) + "page" + chr(34) if h == cur else ""}>{t}</a></li>' for h, t in NAV_ITEMS)
-    return f'<nav class="site-nav" aria-label="Main">\n  <div class="container{" wide" if cur == "publications.html" else ""}">\n    <a class="brand" href="index.html">{E_(HOME["site"]["name"])}</a>\n    <ul>{li}</ul>\n  </div>\n</nav>'
+    return f'<nav class="site-nav" aria-label="Main">\n  <div class="container{" wide" if cur == "publications.html" else ""}">\n    <a class="brand" href="index.html">{E_(HOME["site"]["name"])}</a>\n    <ul>{li}</ul>\n    {THEME_BTN}\n  </div>\n</nav>'
 
 def footer(wide=False):
     return (f'<footer class="site-footer">\n  <div class="container{" wide" if wide else ""}">'
@@ -181,7 +195,7 @@ for s in CFG:
     </div>
     <p class="empty-msg muted" hidden>No {E_(s["heading"].lower())} match the filters.</p>
   </section>''')
-page = (open('publications.tpl.html').read().replace('{{NAV}}', nav('publications.html')).replace('{{CHIPS}}', '\n      '.join(chips))
+page = (open('publications.tpl.html').read().replace('{{THEME_HEAD}}', THEME_HEAD).replace('{{NAV}}', nav('publications.html')).replace('{{CHIPS}}', '\n      '.join(chips))
         .replace('{{SECTIONS}}', '\n\n'.join(blocks)).replace('{{FOOTER}}', footer(True)).replace('{{TOTAL}}', str(total)))
 open(os.path.join(OUT, 'publications.html'), 'w').write(page)
 
@@ -221,7 +235,7 @@ for t in H['topics']:
         <h3>{E_(t["title"])}</h3>{summ}
         <ul class="topic-subs" aria-label="{E_(t["title"])} sub-topics">{"".join(chip(st) for st in t["subtopics"])}</ul>{more}
       </article>''')
-research_note = 'Each linked sub-topic opens the matching publications.' if any(TAGCOUNT.get(st['id']) for t in H['topics'] for st in t['subtopics']) else ''
+research_note = '<p class=\"muted\">Each linked sub-topic opens the matching publications.</p>' if any(TAGCOUNT.get(st['id']) for t in H['topics'] for st in t['subtopics']) else ''
 cnt = {s['id']: len(ORDER.get(s['id'], [])) for s in CFG}
 short = {'journals': 'journal', 'conferences': 'conference', 'posters': 'posters', 'magazines': 'magazine', 'datasets': 'datasets'}
 pubs_listed = [k for s in CFG for k in ORDER.get(s['id'], [])]
@@ -248,7 +262,7 @@ groups = ''.join(f'<div class="contact-group"><h3>{E_(g["label"])}</h3><ul class
 contact = ('    <div class="contact-grid">\n'
            f'      <div class="contact-group"><h3>Address</h3>' + ''.join(f'<p>{E_(a)}</p>' for a in C['affiliation']) + '</div>\n      ' + groups + '\n    </div>')
 idx = open('index.tpl.html').read()
-for k, v in {'{{NAV}}': nav('index.html'), '{{NAME}}': E_(site['name']), '{{DESCRIPTION}}': E_(site['description']),
+for k, v in {'{{THEME_HEAD}}': THEME_HEAD, '{{NAV}}': nav('index.html'), '{{NAME}}': E_(site['name']), '{{DESCRIPTION}}': E_(site['description']),
              '{{HEADLINE}}': site['headline'], '{{BIO}}': bio, '{{ANCHORS}}': anchors, '{{TOPICS}}': '\n'.join(topics), '{{RESEARCH_NOTE}}': research_note, '{{IMG}}': site['image'].rsplit('-', 1)[0],
              '{{GLANCE}}': '\n'.join('      ' + g for g in glance), '{{ONGOING}}': '\n'.join(proj_card(k) for k in on),
              '{{OUTSIDE}}': H['outside_lab']['html'], '{{FOOTER}}': footer(), '{{CONTACT}}': contact,

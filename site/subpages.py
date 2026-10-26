@@ -11,7 +11,7 @@ def page_shell(title, cur, body, desc, wide=False):
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{E_(title)} — Pedro Rito</title>
   <meta name="description" content="{E_(desc)}">
-  <link rel="stylesheet" href="style.css">
+  {THEME_HEAD}
 </head>
 <body>
 <a class="skip-link" href="#main">Skip to content</a>
