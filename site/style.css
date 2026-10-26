@@ -219,8 +219,6 @@ a.card:hover { border-color: var(--accent); }
 .badge.status-accepted { background: var(--b-conf-bg);    color: var(--b-conf-fg); }
 .badge.status-submitted::before { content: "◷ "; }
 .badge.status-accepted::before  { content: "✓ "; }
-.badge.funder          { background: var(--b-journal-bg); color: var(--b-journal-fg); border-style: dashed; border-color: currentColor; font-weight: 600; }
-.badge.funder::before  { content: "Funder · "; font-weight: 500; }
 .badge.project         { background: transparent; border-color: var(--border); color: var(--fg-muted);
                          font-weight: 500; text-decoration: none; }
 a.badge.project:hover  { border-color: var(--accent); color: var(--accent); }

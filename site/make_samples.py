@@ -110,9 +110,7 @@ def cell(col, e, n):
         out = []
         for p in projs(e):
             j = J.get(p, {})
-            if p == 'fct':
-                out.append(f'<span class="badge funder" title="Funded by {E_(clean(j.get("title", "FCT")))}">FCT</span>')
-            elif p in LISTED_PROJECTS:   # link only to projects that have a row on projects.html (no dead anchors)
+            if p in LISTED_PROJECTS:   # link only to projects that have a row on projects.html (no dead anchors)
                 out.append(f'<a class="badge project" data-project="{p}" href="projects.html#{p}" title="{E_(clean(j.get("title", p)))}">{E_(plabel(p))}</a>')
             else:
                 out.append(f'<span class="badge project" data-project="{p}" title="{E_(clean(j.get("title", p)))}">{E_(plabel(p))}</span>')
