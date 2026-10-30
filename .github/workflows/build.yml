@@ -1,6 +1,6 @@
 # Builds pedrorito.me from the private CV repo and deploys to GitHub Pages.
 # Builds pedrorito.me from the PRIVATE CV repo pedrorito/pedrorito-cv and deploys to GitHub Pages.
-# Repo layout:  CNAME, README.md, tw/ (untouched)  +  .github/workflows/build.yml  +  site/ (generator .py, *.yml, *.tpl.html, style.css, site.js, img/)
+# Repo layout:  CNAME, README.md, tw/ (untouched)  +  .github/workflows/build.yml  +  site/ (generator .py, *.yml, *.tpl.html, style.css, site.js, img/, favicon/ -> copied to the site root by the generator)
 # Secret: CV_REPO_TOKEN = fine-grained PAT, resource owner pedrorito, repository access "Only select repositories:
 #         pedrorito-cv", permissions Contents: Read-only (+ Metadata: Read-only, automatic). Nothing else. Expiry ≤ 1 year.
 # Only generated HTML/CSS/JS and re-emitted per-entry bib files are published; raw .tex/.bib never leave the runner.
@@ -75,6 +75,7 @@ jobs:
           if grep -RqiE '^\s*(projects|pubstate|award|keywords|note)\s*=' _site/bib; then
             echo "private/custom bib fields found in _site/bib"; exit 1; fi
           test -f _site/CNAME && test -d _site/tw
+          test -f _site/favicon.ico && test -f _site/favicon.svg && test -f _site/apple-touch-icon.png
 
       - uses: actions/upload-pages-artifact@v3
         with:

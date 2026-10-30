@@ -133,9 +133,13 @@ NAV_ITEMS = [('index.html', 'About'), ('publications.html', 'Publications'), ('p
 # Theme: default follows prefers-color-scheme; an explicit choice (toggle) is stored in localStorage and set as
 # <html data-theme="light|dark">. Applied in <head> before first paint (no flash). Without JS the button stays hidden.
 import hashlib   # cache-busting: ?v=<hash of style.css + site.js> so HTML and assets never mismatch
-ASSET_V = hashlib.sha1(open('style.css', 'rb').read() + open('site.js', 'rb').read()).hexdigest()[:8]
+ASSET_V = hashlib.sha1(b''.join(open(f, 'rb').read() for f in ['style.css', 'site.js'] + sorted('favicon/' + x for x in os.listdir('favicon')))).hexdigest()[:8]   # cache-busting fingerprint (CSS, JS, favicon)
 THEME_HEAD = ('<script>try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.dataset.theme=t}catch(e){}</script>\n'
-              f'  <link rel="stylesheet" href="style.css?v={ASSET_V}">')
+              f'  <link rel="stylesheet" href="style.css?v={ASSET_V}">\n'
+              # favicon (site/favicon/*, copied to the site root below): SVG adapts to light/dark tabs; PNG/ICO fallbacks
+              f'  <link rel="icon" href="favicon.svg?v={ASSET_V}" type="image/svg+xml">\n'
+              f'  <link rel="icon" href="favicon-32.png?v={ASSET_V}" type="image/png" sizes="32x32">\n'
+              f'  <link rel="apple-touch-icon" href="apple-touch-icon.png?v={ASSET_V}">')
 THEME_BTN = ('<button type="button" class="theme-toggle" id="theme-toggle" aria-label="Switch to dark mode" aria-pressed="false" hidden>'
              '<svg class="i-moon" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>'
              '<svg class="i-sun" viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" focusable="false"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g></svg>'
@@ -276,7 +280,11 @@ def proj_row(k):   # one table row per ongoing project
     return (f'      <tr><th scope="row">{h}</th><td class="pname">{L(j["title"]) if j.get("title") else ""}</td>'
             f'<td class="pfund">{E_(funder) or "–"}</td><td class="pyear">{start + "–" if start else "–"}</td></tr>')
 anchors = chip_nav([(f'#{a["id"]}', a['label']) for a in H['anchors']], 'On this page')
-# contact as a plain definition list of text links (no icons / pills)
+# contact as a plain definition list of text links (no icons / pills); external links open in a new tab
+EXT = ' target="_blank" rel="noopener noreferrer"'
+def ext_links(html_):   # add target=_blank + noopener to absolute http(s) links that have no target yet
+    return re.sub(r'<a ((?:(?!target=)[^>])*?href="https?://[^"]+"(?:(?!target=)[^>])*)>',
+                  lambda m: '<a ' + (re.sub(r'\s*rel="me"\s*', ' ', m.group(1)).strip() + (' target="_blank" rel="me noopener noreferrer"' if 'rel="me"' in m.group(1) else EXT)) + '>', html_)
 contact = ('    <dl class="contact-dl">\n      <dt>Address</dt><dd>' + '<br>'.join(E_(x) for x in C['affiliation']) + '</dd>\n'
            + ''.join(f'      <dt>{E_(g["label"])}</dt><dd>' + ' <span class="sep">·</span> '.join(
                f'<a{" rel=" + chr(34) + "me" + chr(34) if l.get("rel_me") else ""} href="{E_(l["url"])}">{E_(l["label"])}</a>' for l in g['links']) + '</dd>\n'
@@ -285,7 +293,7 @@ idx = open('index.tpl.html').read()
 for k, v in {'{{THEME_HEAD}}': THEME_HEAD, '{{NAV}}': nav('index.html'), '{{NAME}}': E_(site['name']), '{{DESCRIPTION}}': E_(site['description']),
              '{{HEADLINE}}': site['headline'], '{{BIO}}': bio, '{{SECTION_NAV}}': anchors, '{{TOPICS}}': '\n'.join(topics), '{{RESEARCH_NOTE}}': research_note, '{{IMG}}': site['image'].rsplit('-', 1)[0],
              '{{GLANCE}}': '\n'.join('      ' + g for g in glance), '{{ONGOING}}': '\n'.join(proj_row(k) for k in on),
-             '{{OUTSIDE}}': H['outside_lab']['html'], '{{FOOTER}}': footer(), '{{CONTACT}}': contact,
+             '{{OUTSIDE}}': ext_links(H['outside_lab']['html']), '{{FOOTER}}': footer(), '{{CONTACT}}': ext_links(contact),
              '{{JSONLD}}': '\n'.join('  ' + l for l in json.dumps(jsonld, ensure_ascii=False, indent=2).splitlines())}.items():
     idx = idx.replace(k, v)
 open(os.path.join(OUT, 'index.html'), 'w').write(idx)
@@ -308,7 +316,7 @@ def page_shell(title, cur, body, desc, wide=False, intro='', sections=None):
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{E_(title)} — Pedro Rito</title>
+  <title>{E_(HOME['site']['name'])}</title>
   <meta name="description" content="{E_(desc)}">
   {THEME_HEAD}
 </head>
@@ -331,3 +339,8 @@ if os.environ.get('PREVIEW') == '0':   # production build: drop the "Preview." b
         if f.endswith('.html'):
             p = os.path.join(OUT, f); t = open(p).read()
             open(p, 'w').write(re.sub(r'\s*<p class="sample-banner">.*?</p>', '', t, flags=re.S))
+
+# favicon files -> site root of the output (the workflow publishes OUT_DIR as _site)
+import shutil
+for f in sorted(os.listdir('favicon')):
+    if f.endswith(('.svg', '.png', '.ico')): shutil.copy(os.path.join('favicon', f), os.path.join(OUT, f))

@@ -18,3 +18,7 @@ Homepage ("technical" look): plain text, thin rules, big numerals for the counts
 
 Supervision: only the `supervision.bib` types listed under `supervision: types:` in `site/publications.yml`
 (default: PhD + MSc theses) appear on the site; other types (BSc, internships, scholarships, …) stay CV-only.
+
+Favicon: `site/favicon/` (SVG adapts to light/dark tabs; 16/32 PNG, 180 apple-touch-icon and .ico generated from it).
+The generator copies these files to the site root; `<link rel="icon">` tags are in the shared head (THEME_HEAD) of every page.
+All pages use the HTML title "Pedro Rito"; external links in the homepage Contact section and "Outside the lab" line open in a new tab.
