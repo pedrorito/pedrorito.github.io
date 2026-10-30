@@ -411,8 +411,8 @@ h1 { font-size: clamp(1.6rem, 2vw + 1rem, 2rem); font-weight: 650; letter-spacin
 .head { display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: start; padding-top: 1.75rem; }
 .head h1 { margin-bottom: .25rem; }
 .head .role { color: var(--fg-muted); margin: 0; }
-.head .photo { width: 5rem; height: 5rem; object-fit: cover; border-radius: 2px; filter: grayscale(.15); }
-@media (max-width: 30rem) { .head .photo { width: 4rem; height: 4rem; } }
+.head .photo { width: 7rem; height: 7rem; object-fit: cover; border-radius: 2px; filter: grayscale(.15); }
+@media (max-width: 30rem) { .head .photo { width: 5.5rem; height: 5.5rem; } }
 .home .bio { margin-top: 1.25rem; }
 .home .bio p { max-width: 46rem; }
 
