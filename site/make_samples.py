@@ -7,7 +7,6 @@ Production: export_md.py writes content/*.md with YAML front matter and build.py
 cell/row logic below is what those templates do."""
 import html, json, os, re, collections, yaml
 from bibmini import parse, clean, latex2html as L
-from icons import icon_svg   # contact-link icons (inline SVG, currentColor)
 CV = os.path.join(os.environ.get('CV_DIR', '/workspace/overleaf-cv'), '')      # checkout of the private CV repo
 OUT = os.environ.get('OUT_DIR', '.')                                         # _site/ in CI
 os.makedirs(OUT, exist_ok=True)
@@ -149,7 +148,7 @@ THEME_BTN = ('<button type="button" class="theme-toggle" id="theme-toggle" aria-
 
 def nav(cur):
     li = ''.join(f'<li><a class="nav-link" href="{h}"{" aria-current=" + chr(34) + "page" + chr(34) if h == cur else ""}>{t}</a></li>' for h, t in NAV_ITEMS)
-    return f'<nav class="site-nav" aria-label="Main">\n  <div class="container{" wide" if cur == "publications.html" else ""}">\n    <a class="brand" href="index.html">{E_(HOME["site"]["name"])}</a>\n    {THEME_BTN}\n    <ul>{li}</ul>\n  </div>\n</nav>'
+    return f'<nav class="site-nav" aria-label="Main">\n  <div class="container{" wide" if cur in ("publications.html", "projects.html", "supervision.html") else ""}">\n    <a class="brand" href="index.html">{E_(HOME["site"]["name"])}</a>\n    {THEME_BTN}\n    <ul>{li}</ul>\n  </div>\n</nav>'
 
 # ---------- shared page components (used by EVERY page; new pages get them for free) ----------
 # chip_nav(items, label): the in-page section menu ("chips" row). ONE markup + ONE CSS class (.chips in style.css):
@@ -237,19 +236,19 @@ jsonld = {'@context': 'https://schema.org', '@graph': [
      'image': site['url'] + site['image'], 'knowsAbout': site['knows_about'], 'sameAs': same_as},
     {'@type': 'Organization', '@id': R['url'] + '#organization', 'name': R['name'], 'url': R['url'], 'sameAs': R['same_as']}]}
 topics = []
-for t in H['topics']:
-    def chip(st):
+for t in H['topics']:   # plain heading + bulleted list (link + count where publications carry the tag)
+    def item(st):
         n = TAGCOUNT.get(st['id'], 0)
-        return (f'<li><a class="chip" href="publications.html?topic={E_(st["id"])}">{E_(st["label"])} <span class="chip-count">{n}</span></a></li>' if n
-                else f'<li><span class="chip chip-static">{E_(st["label"])}</span></li>')
-    more = (f'\n        <p class="topic-more"><a href="publications.html?topic={t["id"]}">All {E_(t["title"])} publications →</a></p>'
+        return (f'<li><a href="publications.html?topic={E_(st["id"])}">{E_(st["label"])}</a> <span class="n">({n})</span></li>' if n
+                else f'<li>{E_(st["label"])}</li>')
+    more = (f'\n        <p class="more"><a href="publications.html?topic={t["id"]}">All {E_(t["title"])} publications</a></p>'
             if TAGCOUNT.get(t['id']) else '')
-    summ = f'\n        <p class="topic-summary">{E_(t["summary"])}</p>' if t.get('summary') else ''
-    topics.append(f'''      <article class="topic-card topic-{t["id"]}" id="topic-{t["id"]}">
+    summ = f'\n        <p class="muted">{E_(t["summary"])}</p>' if t.get('summary') else ''
+    topics.append(f'''      <div class="col" id="topic-{t["id"]}">
         <h3>{E_(t["title"])}</h3>{summ}
-        <ul class="topic-subs" aria-label="{E_(t["title"])} sub-topics">{"".join(chip(st) for st in t["subtopics"])}</ul>{more}
-      </article>''')
-research_note = '<p class=\"muted\">Each linked sub-topic opens the matching publications.</p>' if any(TAGCOUNT.get(st['id']) for t in H['topics'] for st in t['subtopics']) else ''
+        <ul>{"".join(item(st) for st in t["subtopics"])}</ul>{more}
+      </div>''')
+research_note = '<p class=\"muted\">Linked sub-topics open the matching publications.</p>' if any(TAGCOUNT.get(st['id']) for t in H['topics'] for st in t['subtopics']) else ''
 cnt = {s['id']: len(ORDER.get(s['id'], [])) for s in CFG}
 short = {'journals': 'journal', 'conferences': 'conference', 'posters': 'posters', 'magazines': 'magazine', 'datasets': 'datasets'}
 pubs_listed = [k for s in CFG for k in ORDER.get(s['id'], [])]
@@ -264,27 +263,28 @@ SUP = {k: e for k, e in SUP_ALL.items() if sup_type(e) in {t['type'] for t in SU
 sup_n = str(len(SUP)) if SUP else '—'
 sup_note = (' · '.join(f'{n} {t["heading"].split()[0]}' for t in SUP_TYPES if (n := sum(sup_type(e) == t['type'] for e in SUP.values())))
             if SUP else 'PhD and MSc (co)supervision')
-glance = [
-    f'<a class="card" href="publications.html"><div class="stat">{sum(cnt.values())}</div><h3>Publications</h3><p class="muted">' + ' · '.join(f'{v} {short[k]}' for k, v in cnt.items()) + '</p></a>',
-    f'<a class="card" href="projects.html"><div class="stat">{len(on) + len(fin)}</div><h3>Projects</h3><p class="muted">{len(on)} ongoing · {len(fin)} finished · {E_(H.get("glance_notes", {}).get("projects", ""))}</p></a>',
-    f'<a class="card" href="supervision.html"><div class="stat">{sup_n}</div><h3>Supervision</h3><p class="muted">{sup_note}</p></a>']
-def proj_card(k):
+glance = [   # big numerals in a plain row, small grey breakdown (no cards)
+    ('publications.html', sum(cnt.values()), 'Publications', ' · '.join(f'{v} {short[k]}' for k, v in cnt.items())),
+    ('projects.html', len(on) + len(fin), 'Projects', f'{len(on)} ongoing · {len(fin)} finished' + (f' · {E_(H["glance_notes"]["projects"])}' if H.get('glance_notes', {}).get('projects') else '')),
+    ('supervision.html', sup_n, 'Supervision', sup_note)]
+glance = [f'<div class="fig"><a class="num" href="{h}">{n}</a><a class="lab" href="{h}">{t}</a><p>{d}</p></div>' for h, n, t, d in glance]
+def proj_row(k):   # one table row per ongoing project
     j = J[k]; name = E_(plabel(k))
     h = f'<a href="{E_(j["url"])}">{name}</a>' if j.get('url') else f'<a href="projects.html#{k}">{name}</a>'
     funder = re.split(r',| \(| and its', clean(j.get('funder', '')))[0].strip()
     start = (j.get('date') or '').split('/')[0][:4]
-    desc = L(j['title']) if j.get('title') else ''
-    b = ''.join(f'<span class="badge">{E_(x)}</span>' for x in (funder, start + '–' if start else '') if x)
-    return f'      <article class="card"><h3>{h}</h3>' + (f'<p>{desc}</p>' if desc else '') + f'<div class="badges">{b}</div></article>'
+    return (f'      <tr><th scope="row">{h}</th><td class="pname">{L(j["title"]) if j.get("title") else ""}</td>'
+            f'<td class="pfund">{E_(funder) or "–"}</td><td class="pyear">{start + "–" if start else "–"}</td></tr>')
 anchors = chip_nav([(f'#{a["id"]}', a['label']) for a in H['anchors']], 'On this page')
-groups = ''.join(f'<div class="contact-group"><h3>{E_(g["label"])}</h3><ul class="links">' + ''.join(
-    f'<li><a{" rel=" + chr(34) + "me" + chr(34) if l.get("rel_me") else ""} href="{E_(l["url"])}">{icon_svg(l["url"], l.get("icon"))}<span>{E_(l["label"])}</span></a></li>' for l in g['links']) + '</ul></div>' for g in C['groups'])
-contact = ('    <div class="contact-grid">\n'
-           f'      <div class="contact-group"><h3>Address</h3>' + ''.join(f'<p>{E_(a)}</p>' for a in C['affiliation']) + '</div>\n      ' + groups + '\n    </div>')
+# contact as a plain definition list of text links (no icons / pills)
+contact = ('    <dl class="contact-dl">\n      <dt>Address</dt><dd>' + '<br>'.join(E_(x) for x in C['affiliation']) + '</dd>\n'
+           + ''.join(f'      <dt>{E_(g["label"])}</dt><dd>' + ' <span class="sep">·</span> '.join(
+               f'<a{" rel=" + chr(34) + "me" + chr(34) if l.get("rel_me") else ""} href="{E_(l["url"])}">{E_(l["label"])}</a>' for l in g['links']) + '</dd>\n'
+               for g in C['groups']) + '    </dl>')
 idx = open('index.tpl.html').read()
 for k, v in {'{{THEME_HEAD}}': THEME_HEAD, '{{NAV}}': nav('index.html'), '{{NAME}}': E_(site['name']), '{{DESCRIPTION}}': E_(site['description']),
              '{{HEADLINE}}': site['headline'], '{{BIO}}': bio, '{{SECTION_NAV}}': anchors, '{{TOPICS}}': '\n'.join(topics), '{{RESEARCH_NOTE}}': research_note, '{{IMG}}': site['image'].rsplit('-', 1)[0],
-             '{{GLANCE}}': '\n'.join('      ' + g for g in glance), '{{ONGOING}}': '\n'.join(proj_card(k) for k in on),
+             '{{GLANCE}}': '\n'.join('      ' + g for g in glance), '{{ONGOING}}': '\n'.join(proj_row(k) for k in on),
              '{{OUTSIDE}}': H['outside_lab']['html'], '{{FOOTER}}': footer(), '{{CONTACT}}': contact,
              '{{JSONLD}}': '\n'.join('  ' + l for l in json.dumps(jsonld, ensure_ascii=False, indent=2).splitlines())}.items():
     idx = idx.replace(k, v)

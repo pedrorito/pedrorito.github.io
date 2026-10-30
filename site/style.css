@@ -381,3 +381,83 @@ table.data details p { margin: .35rem 0 0; max-width: 46rem; }
 .hero .avatar { display: block; aspect-ratio: 1; height: auto; }
 .chip.chip-static { cursor: default; }
 .topic-subs .chip.chip-static:hover { border-color: color-mix(in srgb, var(--topic) 35%, var(--border)); color: inherit; background: none; }
+
+/* =====================================================================
+   "Technical" look (2026-10-30). Shared parts (nav, theme toggle, section menu, h1) apply to every page;
+   everything under .home is the homepage only. Other pages keep their tables, cards, badges and filters.
+   ===================================================================== */
+/* shared nav: text links, current page underlined (no grey pill) */
+.site-nav a.nav-link { border-radius: 0; padding: .4rem .55rem; }
+.site-nav a.nav-link:hover { background: none; color: var(--accent); }
+.site-nav a.nav-link[aria-current="page"] { background: none; text-decoration: underline; text-underline-offset: .35em; text-decoration-thickness: 2px; }
+.theme-toggle { border-radius: 2px; }
+h1 { font-size: clamp(1.6rem, 2vw + 1rem, 2rem); font-weight: 650; letter-spacing: 0; }
+
+/* shared section menu (chip_nav, every page): plain inline links with "(n)" counts */
+.chips ul { gap: .2rem .9rem; margin: 1.25rem 0; font-size: .92rem; }
+.chips .chip { border: 0; border-radius: 0; padding: 0; background: none; color: var(--accent); font-weight: 400; font-size: inherit; gap: .3rem; }
+.chips .chip:hover { background: none; text-decoration: underline; }
+.chips .chip-count { border: 0; background: none; padding: 0; min-width: 0; font-family: var(--font-mono); font-size: .8rem; font-weight: 400; color: var(--fg-muted); line-height: inherit; }
+.chips .chip-count::before { content: "("; } .chips .chip-count::after { content: ")"; }
+
+/* ---------- homepage ---------- */
+.home { --maxw: 60rem; line-height: 1.55; }
+.home h2 { font-size: 1.15rem; font-weight: 650; letter-spacing: 0; margin: 2.5rem 0 1rem; padding-top: .9rem; border-top: 1px solid var(--border); }
+.home h3 { font-size: 1rem; font-weight: 650; }
+.home section + section { border-top: 0; margin-top: 0; }   /* the h2 rule is the only separator */
+.home .figures .lab, .home .contact-dl dt, .home table.plain thead th {
+  font-family: var(--font-mono); font-size: .75rem; font-weight: 500; text-transform: uppercase; letter-spacing: .06em; color: var(--fg-muted); }
+
+.head { display: grid; grid-template-columns: 1fr auto; gap: 1rem; align-items: start; padding-top: 1.75rem; }
+.head h1 { margin-bottom: .25rem; }
+.head .role { color: var(--fg-muted); margin: 0; }
+.head .photo { width: 5rem; height: 5rem; object-fit: cover; border-radius: 2px; filter: grayscale(.15); }
+@media (max-width: 30rem) { .head .photo { width: 4rem; height: 4rem; } }
+.home .bio { margin-top: 1.25rem; }
+.home .bio p { max-width: 46rem; }
+
+.two-col { display: grid; gap: 1rem 2.5rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); }
+.two-col h3 { margin-bottom: .35rem; }
+.two-col ul { margin: 0 0 .5rem; padding-left: 1.1rem; }
+.two-col li { margin: .15rem 0; }
+.two-col .n, .projects-mini .pyear { font-family: var(--font-mono); font-size: .82rem; color: var(--fg-muted); }
+.home .more { font-size: .92rem; margin: .5rem 0 0; }
+
+.figures { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); border-bottom: 1px solid var(--border); }
+.figures .fig { padding: .25rem 1.25rem 1rem; }
+.figures .fig + .fig { border-left: 1px solid var(--border); }
+.figures .fig:first-child { padding-left: 0; }
+.figures .num { display: block; font-size: 2.6rem; font-weight: 600; line-height: 1.05; color: var(--fg); text-decoration: none; font-variant-numeric: tabular-nums; }
+.figures .lab { display: block; margin-top: .3rem; text-decoration: none; }
+.figures .num:hover, .figures .lab:hover { color: var(--accent); }
+.figures p { margin: .35rem 0 0; font-size: .85rem; color: var(--fg-muted); }
+@media (max-width: 40rem) {
+  .figures { grid-template-columns: 1fr; border-bottom: 0; }
+  .figures .fig { padding: .9rem 0; border-bottom: 1px solid var(--border); }
+  .figures .fig + .fig { border-left: 0; }
+}
+
+table.plain { width: 100%; border-collapse: collapse; font-size: .95rem; }
+table.plain th, table.plain td { text-align: left; vertical-align: top; padding: .5rem .75rem .5rem 0; border-bottom: 1px solid var(--border); }
+table.plain thead th { border-bottom-color: var(--fg-muted); }
+table.plain tbody th { font-weight: 600; white-space: nowrap; }
+.projects-mini .pfund { color: var(--fg-muted); }
+.projects-mini .pyear { white-space: nowrap; }
+@media (max-width: 40rem) {
+  table.plain thead { display: none; }
+  table.plain, table.plain tbody { display: block; width: 100%; }
+  table.plain tr { padding: .6rem 0; border-bottom: 1px solid var(--border); display: grid; grid-template-columns: 1fr auto; gap: 0 .75rem; }
+  table.plain th, table.plain td { display: block; border: 0; padding: 0; }
+  table.plain .pname { grid-column: 1 / -1; grid-row: 2; }
+  table.plain .pfund { grid-column: 1 / -1; grid-row: 3; font-size: .88rem; }
+  table.plain .pyear { grid-column: 2; grid-row: 1; }
+}
+
+.outside-lab { color: var(--fg-muted); max-width: none; margin-top: 2.5rem; padding-top: .9rem; border-top: 1px solid var(--border); }
+.outside-lab em { font-style: normal; font-weight: 600; color: var(--fg); }
+
+.contact-dl { display: grid; grid-template-columns: 11rem 1fr; gap: .6rem 1rem; margin: 0; }
+.contact-dl dt { padding-top: .2rem; }
+.contact-dl dd { margin: 0; }
+.contact-dl .sep { color: var(--fg-muted); margin: 0 .2rem; }
+@media (max-width: 40rem) { .contact-dl { grid-template-columns: 1fr; gap: .15rem; } .contact-dl dd { margin-bottom: .7rem; } }

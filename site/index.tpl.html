@@ -13,54 +13,58 @@
   </script>
   {{THEME_HEAD}}
 </head>
-<body>
+<body class="home">
 <a class="skip-link" href="#main">Skip to content</a>
 {{NAV}}
 
 <main id="main" class="container">
   <p class="sample-banner"><strong>Preview.</strong> Bio from the <code>cvbio</code> block in main.tex; counts and ongoing projects generated from the CV repo. Sub-topic chips become links once publications carry the matching <code>keywords</code>.</p>
 
-  <section class="hero" id="about" aria-labelledby="name">
-    <picture>
-      <source type="image/webp" srcset="{{IMG}}-400.webp 400w, {{IMG}}-800.webp 800w" sizes="(min-width: 48rem) 9rem, 7rem">
-      <img class="avatar" src="{{IMG}}-400.jpg" srcset="{{IMG}}-400.jpg 400w, {{IMG}}-800.jpg 800w" sizes="(min-width: 48rem) 9rem, 7rem"
-           width="400" height="400" alt="Pedro Rito" decoding="async" fetchpriority="high">
-    </picture>
-    <div>
+  <header class="head" id="about">
+    <div class="head-text">
       <h1 id="name">{{NAME}}</h1>
       <p class="role">{{HEADLINE}}</p>
-      <div class="bio" data-source="main.tex cvbio">{{BIO}}</div>
     </div>
-  </section>
+    <picture>
+      <source type="image/webp" srcset="{{IMG}}-400.webp 400w" sizes="5rem">
+      <img class="photo" src="{{IMG}}-400.jpg" width="400" height="400" alt="Pedro Rito" decoding="async">
+    </picture>
+  </header>
+  <div class="bio" data-source="main.tex cvbio">{{BIO}}</div>
 
   {{SECTION_NAV}}
 
   <section id="research" aria-labelledby="h-research">
     <h2 id="h-research">Research topics</h2>
-    {{RESEARCH_NOTE}}
-    <div class="topics">
+    <div class="two-col">
 {{TOPICS}}
     </div>
+    {{RESEARCH_NOTE}}
   </section>
 
   <section id="highlights" aria-labelledby="h-highlights">
     <h2 id="h-highlights">At a glance</h2>
-    <div class="grid">
+    <div class="figures">
 {{GLANCE}}
     </div>
   </section>
 
   <section id="projects" aria-labelledby="h-projects">
     <h2 id="h-projects">Ongoing projects</h2>
-    <div class="grid">
+    <table class="plain projects-mini">
+      <thead><tr><th scope="col">Project</th><th scope="col">Name</th><th scope="col">Funder</th><th scope="col">Since</th></tr></thead>
+      <tbody>
 {{ONGOING}}
-    </div>
-    <p style="margin-top:1rem"><a href="projects.html">All projects →</a></p>
+      </tbody>
+    </table>
+    <p class="more"><a href="projects.html">All projects</a></p>
   </section>
 
-  <p class="aside outside-lab"><em>Outside the lab:</em> {{OUTSIDE}}</p>
+  <section id="outside" aria-label="Outside the lab">
+    <p class="outside-lab"><em>Outside the lab:</em> {{OUTSIDE}}</p>
+  </section>
 
-  <section id="contact" class="contact" aria-labelledby="h-contact">
+  <section id="contact" aria-labelledby="h-contact">
     <h2 id="h-contact">Contact</h2>
 {{CONTACT}}
   </section>

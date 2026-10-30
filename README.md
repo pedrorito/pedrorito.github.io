@@ -13,8 +13,8 @@ To add `new.html`: build its `body` (sections with `id="..."`) in `site/subpages
 `page_shell('Title', 'new.html', body, 'Meta description', sections=[...])`, and add `('new.html', 'Title')`
 to `NAV_ITEMS` in `make_samples.py`.
 
-Contact links on the homepage (`site/home.yml`) get an inline SVG icon (`site/icons.py`, simple-icons CC0 +
-hand-made); set `icon:` per link to override the automatic detection from the URL domain.
+Homepage ("technical" look): plain text, thin rules, big numerals for the counts; contact links are plain text
+(`site/home.yml` → `contact`). Homepage-only CSS is scoped under `body.home` in `style.css`.
 
 Supervision: only the `supervision.bib` types listed under `supervision: types:` in `site/publications.yml`
 (default: PhD + MSc theses) appear on the site; other types (BSc, internships, scholarships, …) stay CV-only.

@@ -8,7 +8,7 @@ site:
   image: img/pedro-rito-800.jpg   # hero photo (img/pedro-rito-{400,800}.{webp,jpg}); JSON-LD `image`
   description: "Pedro Rito: researcher in circuit design and telecommunications & networks (IT Aveiro, University of Aveiro)."
   # Hero second line (title). HTML allowed.
-  headline: 'Researcher · <a href="https://www.it.pt">Instituto de Telecomunicações (IT)</a>, Aveiro · <a href="https://www.ua.pt">University of Aveiro</a>'
+  headline: 'Researcher, <a href="https://www.it.pt">Instituto de Telecomunicações (IT)</a>, <a href="https://www.ua.pt">University of Aveiro</a>'
   knows_about: [Circuit design, Electro-optical transceivers, MMICs, Radio access networks, Vehicular networks, Telecommunications, Vehicular communications, Edge computing, Motorsport]
 
 # Homepage anchor chips (order = order of sections on the page).
@@ -53,8 +53,7 @@ contact:
   affiliation:
     - Instituto de Telecomunicações (IT), Campus Universitário de Santiago, 3810-193 Aveiro, Portugal
   groups:                                # rel_me: true -> rel="me" + schema.org sameAs
-  # optional per link: icon: googlescholar|orcid|researchgate|github|linkedin|x|youtube|instagram|facebook|bluesky|mastodon|globe|link
-  # (default: detected from the URL domain; unknown domains get a generic link icon)
+  # rendered as plain text links (no icons) in a definition list: Address / <group label> / ...
     - label: Research profiles
       links:
         - {label: Google Scholar, url: "https://scholar.google.com/citations?user=MSMBYVwAAAAJ", rel_me: true}
