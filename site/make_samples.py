@@ -115,7 +115,8 @@ def cell(col, e, n):
                 out.append(f'<span class="badge project" data-project="{p}" title="{E_(clean(j.get("title", p)))}">{E_(plabel(p))}</span>')
         return 'c-projects', 'Projects', ('<div class="badges">' + ''.join(out) + '</div>') if out else NA
     if col == 'links':
-        Ls = [f'<a href="https://doi.org/{E_(e["doi"])}">DOI</a>'] if e.get('doi') else ([f'<a href="{E_(e["url"])}">Link</a>'] if e.get('url') else [])
+        # no standalone DOI link: the title already links to https://doi.org/<doi>; entries without a DOI keep their URL link
+        Ls = [] if e.get('doi') else ([f'<a href="{E_(e["url"])}">Link</a>'] if e.get('url') else [])
         return 'c-links', 'Links', ' · '.join(Ls + [f'<a href="bib/{e["_key"]}.bib">BibTeX</a>'])
     if col == 'title':
         t = L(e['title']); url = f"https://doi.org/{e['doi']}" if e.get('doi') else e.get('url')
