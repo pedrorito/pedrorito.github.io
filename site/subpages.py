@@ -40,11 +40,18 @@ open(os.path.join(OUT, 'projects.html'), 'w').write(page_shell('Projects', 'proj
 
 # ---------- supervision.html: CV supervision.bib, only PhD/MSc (publications.yml `supervision.types`) ----------
 # SUP (already filtered to the allowed types), SUP_TYPES, sup_type come from make_samples.py
+def sup_names(e):   # supervisor first, then cosupervisors, in the order given in supervision.bib; Pedro highlighted
+    names = [a for f in ('supervisor', 'cosupervisor') for a in clean(e.get(f, '')).split(' and ') if a.strip()]
+    out = []
+    for a in names:
+        last, _, first = a.partition(', '); n = L(f'{first} {last}'.strip())
+        out.append(f'<span class="me">{n}</span>' if last == 'Rito' and first.startswith('Pedro') else n)
+    return '<br>'.join(out)
 def sup_row(e):
     chips = ''.join(f'<a class="badge project" href="projects.html#{p}">{E_(plabel(p))}</a>' for p in projs(e))
     return (f'      <tr id="{e["_key"]}"><td class="c-year" data-label="Period">{period(e.get("date"))}</td>'
             f'<td class="c-title" data-label="Title"><span class="title">{L(e.get("title"))}</span><span class="authors">{authors(e)}</span></td>'
-            f'<td class="c-small" data-label="Role">{L(e.get("role", "")).title() or NA}</td>'
+            f'<td class="c-small" data-label="Supervisors">{sup_names(e) or L(e.get("role", "")).title() or NA}</td>'
             f'<td class="c-venue" data-label="Institution">{L(e.get("institution") or e.get("funder")) or NA}</td>'
             f'<td class="c-small" data-label="Status">{L(e.get("status", "")).title() or NA}</td>'
             f'<td class="c-projects" data-label="Projects">{"<div class=badges>" + chips + "</div>" if chips else NA}</td>'
@@ -56,7 +63,7 @@ def sup_table(hid, heading, entries):
     return f'''  <section class="pub-section" id="{hid}" aria-labelledby="h-{hid}">
     <h2 id="h-{hid}">{heading} <span class="count-pill">{len(entries)}</span></h2>
     <div class="table-wrap"><table class="data"><caption class="visually-hidden">{heading}</caption>
-      <thead><tr><th scope="col">Period</th><th scope="col">Title &amp; student</th><th scope="col">Role</th><th scope="col">Institution</th><th scope="col">Status</th><th scope="col">Projects</th><th scope="col">Links</th></tr></thead>
+      <thead><tr><th scope="col">Period</th><th scope="col">Title &amp; student</th><th scope="col">Supervisors</th><th scope="col">Institution</th><th scope="col">Status</th><th scope="col">Projects</th><th scope="col">Links</th></tr></thead>
       <tbody>
 {chr(10).join(sup_row(e) for e in entries)}
       </tbody></table></div>
