@@ -38,8 +38,14 @@ _SYM = [(r'\textmu', 'µ'), (r'\textohm', 'Ω'), (r'\textquoteright', '’'), (r
         (r'\%', '%'), (r'\_', '_'), (r'\#', '#'), (r'\$', '$')]
 _MATH = [(r'\sqrt{\mathrm{Hz}}', '√Hz'), (r'\sqrt{Hz}', '√Hz'), ('&lt;', '&lt;'), ('&gt;', '&gt;'), ('-', '−'),
          (r'\times', '×'), (r'\mu', 'µ'), (r'\Omega', 'Ω'), (r'\pm', '±'), (r'\leq', '≤'), (r'\geq', '≥')]
+_ACC = {"'": '\u0301', '`': '\u0300', '^': '\u0302', '"': '\u0308', '~': '\u0303', 'c': '\u0327'}
+def accents(s):   # LaTeX accents ({\'e}, \'{e}, \'e, \c{c}, \~a) -> Unicode (é, ç, ã)
+    import unicodedata
+    return re.sub(r'\{?\\([\'`^"~]|c(?=[{ ]))\s*\{?([A-Za-z])\}?\}?',
+                  lambda m: unicodedata.normalize('NFC', m.group(2) + _ACC[m.group(1)]), s)
 def latex2html(s):
     if not s: return ''
+    s = accents(s)
     s = _html.escape(s, quote=False)
     s = s.replace('\\&amp;', '&amp;')
     def math(m):
