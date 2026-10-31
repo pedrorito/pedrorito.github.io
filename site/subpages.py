@@ -71,7 +71,11 @@ def sup_table(hid, heading, entries):
       </tbody></table></div>
   </section>'''
 G = [(t['id'], t['heading'], t['type']) for t in SUP_TYPES]
-by = {t: sorted([e for e in SUP.values() if sup_type(e) == t], key=lambda e: e.get('date', ''), reverse=True) for _, _, t in G}
+def sup_sortkey(e):   # ongoing first, then by completion date (newest first), then by start date
+    a, _, b = (e.get('date') or '').partition('/')
+    ongoing = not b.strip() or (e.get('status') or '').strip().lower() == 'ongoing'
+    return (1 if ongoing else 0, '' if ongoing else b.strip(), a.strip())
+by = {t: sorted([e for e in SUP.values() if sup_type(e) == t], key=sup_sortkey, reverse=True) for _, _, t in G}
 body = ('\n'.join(sup_table(h, t, by[k]) for h, t, k in G))
 open(os.path.join(OUT, 'supervision.html'), 'w').write(page_shell('Supervision', 'supervision.html', body, 'PhD and MSc theses supervised by Pedro Rito.', wide=True,
         sections=[(f'#{h}', t, len(by[k])) for h, t, k in G]))
