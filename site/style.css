@@ -273,7 +273,7 @@ table.data tbody tr:hover { background: var(--bg-hover); }
 table.data .c-year  { width: 4.5rem; font-variant-numeric: tabular-nums; color: var(--fg-muted); white-space: nowrap; }
 table.data .c-title .title { font-weight: 600; display: block; }
 table.data .authors { display: block; font-size: .87rem; color: var(--fg-muted); margin-top: .15rem; }
-table.data .authors .me { color: var(--fg); font-weight: 600; }
+table.data .authors .me, table.data .c-small .me { color: var(--fg); font-weight: 600; }
 table.data .c-venue { min-width: 12rem; }
 table.data .venue-extra { display: block; font-size: .85rem; color: var(--fg-muted); }
 table.data .c-links { white-space: nowrap; }
