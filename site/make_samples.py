@@ -354,3 +354,41 @@ open(os.path.join(OUT, 'sitemap.xml'), 'w').write(
     '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
     + ''.join(f'  <url><loc>{E_(u)}</loc><lastmod>{_today}</lastmod></url>\n' for u in _urls) + '</urlset>\n')
 open(os.path.join(OUT, 'robots.txt'), 'w').write(f'User-agent: *\nAllow: /\nSitemap: {SITE_URL}sitemap.xml\n')
+
+# llms.txt (llmstxt.org convention), generated only from the same sources as the pages: main.tex cvbio, projects.bib,
+# publications.bib/main.tex publists, supervision.bib, home.yml. No funding amounts; nothing written by hand here.
+from subpages import period, G, by   # same supervision grouping/order as supervision.html
+def _txt(s):   # LaTeX/HTML -> plain one-line text
+    return re.sub(r'\s+', ' ', html.unescape(re.sub(r'<[^>]+>', '', L(s or '')))).strip()
+def _meta_desc(f):
+    m = re.search(r'<meta name="description" content="([^"]*)"', open(os.path.join(OUT, f)).read())
+    return html.unescape(m.group(1)) if m else ''
+def _names(s):
+    return [_txt(f'{a.partition(", ")[2]} {a.partition(", ")[0]}') for a in clean(s or '').split(' and ') if a.strip()]
+_bio = re.sub(r'\s+', ' ', re.search(r'\\begin\{cvbio\}(.*?)\\end\{cvbio\}', tex_nc, re.S).group(1)) if re.search(r'\\begin\{cvbio\}', tex_nc) else ''
+_bio = _txt(re.sub(r'\\href\{[^{}]*\}\{([^{}]*)\}', r'\1', _bio))
+_llm = [f'# {site["name"]}', '', f'> {re.split(r"(?<=\.)\s", _bio)[0]}' if _bio else '', '', _bio, '', '## Pages', '']
+_llm += [f'- [{t}]({SITE_URL + ("" if h == "index.html" else h)}): {_meta_desc(h)}' for h, t in NAV_ITEMS if os.path.exists(os.path.join(OUT, h))]
+_llm += ['', '## Projects', '']
+for _head, _keys in (('Ongoing', on), ('Finished', fin)):
+    _llm += [f'### {_head} ({len(_keys)})', '']
+    for k in _keys:
+        j = J[k]; _per = period(j.get('date')) if j.get('date') else ''
+        _bits = [x for x in (_per, _txt(j.get('funder')), _txt(j.get('role'))) if x]
+        _llm.append(f'- {_txt(plabel(k))}' + (f': {_txt(j["title"])}' if j.get('title') and _txt(j['title']) != _txt(plabel(k)) else '') + (f' ({"; ".join(_bits)})' if _bits else '')
+                    + (f' <{j["url"]}>' if j.get('url') else ''))
+    _llm.append('')
+_llm += ['## Publications', '', f'{sum(cnt.values())} publications, listed at [Publications]({SITE_URL}publications.html) (BibTeX per entry):', '']
+_llm += [f'- {s["heading"]}: {cnt[s["id"]]}' for s in CFG] + ['']
+_llm += ['## Supervision', '']
+for _h, _t, _k in G:
+    if not by[_k]: continue
+    _llm += [f'### {_t} ({len(by[_k])})', '']
+    for e in by[_k]:
+        _sv = _names(e.get('supervisor')) + _names(e.get('cosupervisor'))
+        _llm.append(f'- {", ".join(_names(e.get("author")))}: "{_txt(e.get("title"))}"' + (f' ({_txt(period(e.get("date")))})' if e.get('date') else '')
+                    + (f'. Supervisors: {", ".join(_sv)}' if _sv else '') + (f'. {_txt(e.get("institution"))}' if e.get('institution') else ''))
+    _llm.append('')
+_llm += ['## Contact and profiles', '', f'- Address: {", ".join(C["affiliation"])}']
+_llm += [f'- {g["label"]}: ' + ', '.join(f'[{l["label"]}]({l["url"]})' for l in g['links']) for g in C['groups']]
+open(os.path.join(OUT, 'llms.txt'), 'w').write(re.sub(r'\n{3,}', '\n\n', '\n'.join(_llm)).strip() + '\n')
