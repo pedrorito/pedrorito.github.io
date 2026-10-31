@@ -47,10 +47,12 @@ def sup_names(e):   # supervisor first, then cosupervisors, in the order given i
         last, _, first = a.partition(', '); n = L(f'{first} {last}'.strip())
         out.append(f'<span class="me">{n}</span>' if last == 'Rito' and first.startswith('Pedro') else n)
     return '<br>'.join(out)
+def sup_summary(e):   # thesis abstract as a toggle (same markup as the project details)
+    return f'<details><summary>Summary</summary><p>{L(e["summary"])}</p></details>' if e.get('summary') else ''
 def sup_row(e):
     chips = ''.join(f'<a class="badge project" href="projects.html#{p}">{E_(plabel(p))}</a>' for p in projs(e))
     return (f'      <tr id="{e["_key"]}"><td class="c-year" data-label="Period">{period(e.get("date"))}</td>'
-            f'<td class="c-title" data-label="Title"><span class="title">{L(e.get("title"))}</span><span class="authors">{authors(e)}</span></td>'
+            f'<td class="c-title" data-label="Title"><span class="title">{L(e.get("title"))}</span><span class="authors">{authors(e)}</span>{sup_summary(e)}</td>'
             f'<td class="c-small" data-label="Supervisors">{sup_names(e) or L(e.get("role", "")).title() or NA}</td>'
             f'<td class="c-venue" data-label="Institution">{L(e.get("institution") or e.get("funder")) or NA}</td>'
             f'<td class="c-small" data-label="Status">{L(e.get("status", "")).title() or NA}</td>'
