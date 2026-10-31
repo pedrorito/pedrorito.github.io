@@ -76,6 +76,7 @@ jobs:
             echo "private/custom bib fields found in _site/bib"; exit 1; fi
           test -f _site/CNAME && test -d _site/tw
           test -f _site/favicon.ico && test -f _site/favicon.svg && test -f _site/apple-touch-icon.png
+          test -f _site/sitemap.xml && test -f _site/robots.txt
 
       - uses: actions/upload-pages-artifact@v3
         with:

@@ -345,3 +345,12 @@ if os.environ.get('PREVIEW') == '0':   # production build: drop the "Preview." b
 import shutil
 for f in sorted(os.listdir('favicon')):
     if f.endswith(('.svg', '.png', '.ico')): shutil.copy(os.path.join('favicon', f), os.path.join(OUT, f))
+
+# sitemap.xml + robots.txt (site root). Pages = NAV_ITEMS that were actually generated; index.html -> "/".
+SITE_URL = 'https://pedrorito.me/'
+_today = datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%d')
+_urls = [SITE_URL + ('' if h == 'index.html' else h) for h, _ in NAV_ITEMS if os.path.exists(os.path.join(OUT, h))]
+open(os.path.join(OUT, 'sitemap.xml'), 'w').write(
+    '<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    + ''.join(f'  <url><loc>{E_(u)}</loc><lastmod>{_today}</lastmod></url>\n' for u in _urls) + '</urlset>\n')
+open(os.path.join(OUT, 'robots.txt'), 'w').write(f'User-agent: *\nAllow: /\nSitemap: {SITE_URL}sitemap.xml\n')
