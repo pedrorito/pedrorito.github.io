@@ -8,7 +8,7 @@ def period(d):
     a, _, b = d.partition('/')
     return f'{fmt_date(a)} – {fmt_date(b) if b else "present"}'
 
-# ---------- projects.html: main.tex order + projects.bib (funding amounts deliberately not shown) ----------
+# ---------- projects.html: content.tex order + projects.bib (funding amounts deliberately not shown) ----------
 def proj_row(k):
     j = J[k]
     head = f'<span class="title">{E_(plabel(k))}</span>' + (f'<span class="authors">{L(j["title"])}</span>' if j.get('title') else '')

@@ -55,7 +55,7 @@ jobs:
         env:
           CV_DIR: ${{ github.workspace }}/cv
           OUT_DIR: ${{ github.workspace }}/_site
-          STRICT: "1"         # fail if main.tex has no \begin{cvbio} block (no placeholder bio in production)
+          STRICT: "1"         # fail if content.tex has no \biotext macro (no placeholder bio in production)
           PREVIEW: "0"        # strip "Preview." banners
         run: python make_samples.py
 

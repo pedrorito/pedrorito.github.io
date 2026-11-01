@@ -1,5 +1,5 @@
 """Preview builder (box only). Inputs:
-  CV repo (generated data):  publications.bib, projects.bib, main.tex (publist/project order, \\begin{cvbio} bio),
+  CV repo (generated data):  publications.bib, projects.bib, content.tex (publist/project order, bio macros),
                              supervision.bib (only the types in publications.yml `supervision` are shown: PhD + MSc)
   Site repo (hand-edited):   home.yml, publications.yml (sections / journals / series / supervision)
 Outputs: index.html, publications.html.
@@ -17,13 +17,20 @@ CFG = PUBCFG['sections']
 HOME = yaml.safe_load(open('home.yml'))
 JOURNALS = {j['name']: j for j in PUBCFG['journals']}
 SERIES = PUBCFG['series']
-tex = open(CV + 'main.tex').read()
-tex_nc = '\n'.join(l for l in tex.splitlines() if not l.lstrip().startswith('%'))
-ORDER = {lab: re.findall(r'\\pub\{([^}]+)\}', body)
-         for lab, body in re.findall(r'\\begin\{publist\}\[(\w+)\](.*?)\\end\{publist\}', tex_nc, re.S)}
-PROJ_ORDER = {}
-for head, body in re.findall(r'\\subsubsection\{(Ongoing|Finished) projects\}(.*?)(?=\\subsubsection|\\section|\\end\{document\})', tex_nc, re.S):
-    PROJ_ORDER[head.lower()] = re.findall(r'\\project\{([^}]+)\}', body)
+# Everything text-like comes from content.tex (macros) + the three .bib files; main.tex is NOT read.
+def website_macros(path):
+    """{name: body} for every \newcommand{\name}{...} in content.tex (balanced braces, % comments stripped)."""
+    src = '\n'.join(re.sub(r'(?<!\\)%.*', '', l) for l in open(path, encoding='utf-8').read().splitlines())
+    out = {}
+    for m in re.finditer(r'\\newcommand\{\\(\w+)\}\{', src):
+        i = m.end(); d = 1; j = i
+        while d and j < len(src):
+            d += {'{': 1, '}': -1}.get(src[j], 0); j += 1
+        out[m.group(1)] = src[i:j - 1]
+    return out
+WEB = website_macros(CV + 'content.tex')
+ORDER = {name[4:]: re.findall(r'\\pub\{([^}]+)\}', body) for name, body in WEB.items() if name.startswith('pubs')}
+PROJ_ORDER = {h: re.findall(r'\\project\{([^}]+)\}', WEB.get('projects' + h, '')) for h in ('ongoing', 'finished')}
 LISTED_PROJECTS = {k for ks in PROJ_ORDER.values() for k in ks}   # projects with a row (anchor) on projects.html
 E_ = html.escape
 MONTHS = 'Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec'.split()
@@ -219,15 +226,10 @@ open(os.path.join(OUT, 'publications.html'), 'w').write(page)
 
 # ================= index.html =================
 def bio_from_tex():
-    m = re.search(r'\\begin\{cvbio\}(.*?)\\end\{cvbio\}', tex_nc, re.S)
-    src = 'main.tex'
-    if not m and os.environ.get('STRICT') == '1':
-        raise SystemExit('main.tex has no \\begin{cvbio}...\\end{cvbio} block (required in CI)')
-    if not m:   # not yet in the real CV: use the proposed sample block (provisional placeholder)
-        m = re.search(r'\\begin\{cvbio\}(.*?)\\end\{cvbio\}', '\n'.join(l for l in open('cv-sample/bio-snippet.tex').read().splitlines()
-                                                                  if not l.lstrip().startswith('%')), re.S); src = 'cv-sample/bio-snippet.tex (PROVISIONAL)'
-    paras = [re.sub(r'\s+', ' ', p).strip() for p in re.split(r'\n\s*\n', m.group(1)) if p.strip()]
-    return ''.join(f'<p>{L(p)}</p>' for p in paras), src
+    body = WEB.get('biotext')
+    if body is None: raise SystemExit('content.tex has no \\newcommand{\\biotext}{...} (required)')
+    paras = [re.sub(r'\s+', ' ', p).strip() for p in re.split(r'\n\s*\n', body) if p.strip()]
+    return ''.join(f'<p>{L(p)}</p>' for p in paras), 'content.tex'
 bio, bio_src = bio_from_tex()
 TAGCOUNT = collections.Counter(t for k in {k for sec in CFG for k in ORDER.get(sec['id'], [])} if k in P for t in topics_of(P[k]))
 H = HOME; site = H['site']; C = H['contact']; R = H['outside_lab']['related']
@@ -355,8 +357,8 @@ open(os.path.join(OUT, 'sitemap.xml'), 'w').write(
     + ''.join(f'  <url><loc>{E_(u)}</loc><lastmod>{_today}</lastmod></url>\n' for u in _urls) + '</urlset>\n')
 open(os.path.join(OUT, 'robots.txt'), 'w').write(f'User-agent: *\nAllow: /\nSitemap: {SITE_URL}sitemap.xml\n')
 
-# llms.txt (llmstxt.org convention), generated only from the same sources as the pages: main.tex cvbio, projects.bib,
-# publications.bib/main.tex publists, supervision.bib, home.yml. No funding amounts; nothing written by hand here.
+# llms.txt (llmstxt.org convention), generated only from the same sources as the pages: content.tex bio, projects.bib,
+# publications.bib/content.tex lists, supervision.bib, home.yml. No funding amounts; nothing written by hand here.
 from subpages import period, G, by   # same supervision grouping/order as supervision.html
 def _txt(s):   # LaTeX/HTML -> plain one-line text
     return re.sub(r'\s+', ' ', html.unescape(re.sub(r'<[^>]+>', '', L(s or '')))).strip()
@@ -365,7 +367,7 @@ def _meta_desc(f):
     return html.unescape(m.group(1)) if m else ''
 def _names(s):
     return [_txt(f'{a.partition(", ")[2]} {a.partition(", ")[0]}') for a in clean(s or '').split(' and ') if a.strip()]
-_bio = re.sub(r'\s+', ' ', re.search(r'\\begin\{cvbio\}(.*?)\\end\{cvbio\}', tex_nc, re.S).group(1)) if re.search(r'\\begin\{cvbio\}', tex_nc) else ''
+_bio = re.sub(r'\s+', ' ', WEB.get('biotext', ''))
 _bio = _txt(re.sub(r'\\href\{[^{}]*\}\{([^{}]*)\}', r'\1', _bio))
 _llm = [f'# {site["name"]}', '', f'> {re.split(r"(?<=\.)\s", _bio)[0]}' if _bio else '', '', _bio, '', '## Pages', '']
 _llm += [f'- [{t}]({SITE_URL + ("" if h == "index.html" else h)}): {_meta_desc(h)}' for h, t in NAV_ITEMS if os.path.exists(os.path.join(OUT, h))]
@@ -389,6 +391,11 @@ for _h, _t, _k in G:
         _llm.append(f'- {", ".join(_names(e.get("author")))}: "{_txt(e.get("title"))}"' + (f' ({_txt(period(e.get("date")))})' if e.get('date') else '')
                     + (f'. Supervisors: {", ".join(_sv)}' if _sv else '') + (f'. {_txt(e.get("institution"))}' if e.get('institution') else ''))
     _llm.append('')
+_ol = H['outside_lab']; _rel = _ol['related']
+_llm += ['## Outside the lab: Garagem Rito', '',
+         f'Pedro Rito is also part of his family\'s business, [{_rel["name"]}]({_rel["url"]}), and is passionate about cars and motorsport. '
+         f'The Pedro Rito linked to {_rel["name"]} and the researcher at the University of Aveiro and the Instituto de Telecomunicações described on this site are the same person.',
+         '', f'- {_rel["name"]}: [{_rel["url"]}]({_rel["url"]})'] + [f'- {_rel["name"]} public profile: <{u}>' for u in _rel.get('same_as', [])] + ['']
 _llm += ['## Contact and profiles', '', f'- Address: {", ".join(C["affiliation"])}']
 _llm += [f'- {g["label"]}: ' + ', '.join(f'[{l["label"]}]({l["url"]})' for l in g['links']) for g in C['groups']]
 open(os.path.join(OUT, 'llms.txt'), 'w').write(re.sub(r'\n{3,}', '\n\n', '\n'.join(_llm)).strip() + '\n')
