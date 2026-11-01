@@ -8,7 +8,7 @@ def period(d):
     a, _, b = d.partition('/')
     return f'{fmt_date(a)} – {fmt_date(b) if b else "present"}'
 
-# ---------- projects.html: content.tex order + projects.bib (funding amounts deliberately not shown) ----------
+# ---------- projects.html: projects.bib (status, dates) + order (funding amounts deliberately not shown) ----------
 def proj_row(k):
     j = J[k]
     head = f'<span class="title">{E_(plabel(k))}</span>' + (f'<span class="authors">{L(j["title"])}</span>' if j.get('title') else '')
@@ -71,10 +71,10 @@ def sup_table(hid, heading, entries):
       </tbody></table></div>
   </section>'''
 G = [(t['id'], t['heading'], t['type']) for t in SUP_TYPES]
-def sup_sortkey(e):   # ongoing first, then by completion date (newest first), then by start date
+def sup_sortkey(e):   # ongoing first, then by completion date (newest first), then by start date; same rule as the CV
     a, _, b = (e.get('date') or '').partition('/')
     ongoing = not b.strip() or (e.get('status') or '').strip().lower() == 'ongoing'
-    return (1 if ongoing else 0, '' if ongoing else b.strip(), a.strip())
+    return (1 if ongoing else 0,) + date_key(e.get('date'))
 by = {t: sorted([e for e in SUP.values() if sup_type(e) == t], key=sup_sortkey, reverse=True) for _, _, t in G}
 body = ('\n'.join(sup_table(h, t, by[k]) for h, t, k in G))
 open(os.path.join(OUT, 'supervision.html'), 'w').write(page_shell('Supervision', 'supervision.html', body, 'PhD and MSc theses supervised by Pedro Rito.', wide=True,

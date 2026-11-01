@@ -1,6 +1,6 @@
 # content/home.yml — homepage content that does NOT come from the CV (.tex/.bib). Hand-edited by Pedro.
-# From the CV, generated at build time (do NOT put here): bio paragraph (main.tex \begin{cvbio}),
-# publication/project/award/supervision counts, ongoing projects (main.tex order + projects.bib).
+# From the CV, generated at build time (do NOT put here): bio paragraph (content.tex \biotext),
+# publication/project/award/supervision counts, ongoing projects (projects.bib status and dates).
 site:
   name: Pedro Rito
   alternate_name: Pedro Filipe Vieira Rito

@@ -1,5 +1,5 @@
 """Preview builder (box only). Inputs:
-  CV repo (generated data):  publications.bib, projects.bib, content.tex (publist/project order, bio macros),
+  CV repo (generated data):  publications.bib, projects.bib, supervision.bib, content.tex (bio macro),
                              supervision.bib (only the types in publications.yml `supervision` are shown: PhD + MSc)
   Site repo (hand-edited):   home.yml, publications.yml (sections / journals / series / supervision)
 Outputs: index.html, publications.html.
@@ -17,8 +17,8 @@ CFG = PUBCFG['sections']
 HOME = yaml.safe_load(open('home.yml'))
 JOURNALS = {j['name']: j for j in PUBCFG['journals']}
 SERIES = PUBCFG['series']
-# Everything text-like comes from content.tex (macros) + the three .bib files; main.tex is NOT read.
-def website_macros(path):
+# Text blocks (bio ...) come from content.tex macros; publication lists from publications.bib; project and supervision lists from projects.bib / supervision.bib (main.tex is never read).
+def text_macros(path):
     """{name: body} for every \newcommand{\name}{...} in content.tex (balanced braces, % comments stripped)."""
     src = '\n'.join(re.sub(r'(?<!\\)%.*', '', l) for l in open(path, encoding='utf-8').read().splitlines())
     out = {}
@@ -28,9 +28,34 @@ def website_macros(path):
             d += {'{': 1, '}': -1}.get(src[j], 0); j += 1
         out[m.group(1)] = src[i:j - 1]
     return out
-WEB = website_macros(CV + 'content.tex')
-ORDER = {name[4:]: re.findall(r'\\pub\{([^}]+)\}', body) for name, body in WEB.items() if name.startswith('pubs')}
-PROJ_ORDER = {h: re.findall(r'\\project\{([^}]+)\}', WEB.get('projects' + h, '')) for h in ('ongoing', 'finished')}
+WEB = text_macros(CV + 'content.tex')
+# Publication lists are generated from publications.bib (same rules as the CV, cvstyle.sty "automatic publication lists"):
+# list = entry type (or entrysubtype), order = submitted > accepted > published, then newest first
+# (a year without month first inside its year), ties in bib-file order.
+def pub_section(f):
+    sub = f.get('entrysubtype'); t = f['_type']
+    if sub in ('poster', 'magazine', 'dataset'): return {'poster': 'posters', 'magazine': 'magazines', 'dataset': 'datasets'}[sub]
+    return {'article': 'journals', 'inproceedings': 'conferences', 'dataset': 'datasets', 'incollection': 'chapters',
+            'inbook': 'chapters', 'book': 'chapters', 'patent': 'patents'}.get(t) or ('thesis' if t == 'thesis' and f.get('type') == 'phdthesis' else None)
+def pub_sortkey(f):
+    d = (f.get('date') or '').split('-') + ['', '']
+    return ({'submitted': 2, 'accepted': 1}.get(f.get('pubstate'), 0), int(d[0] or 0), int(d[1] or 99))
+ORDER = {}
+for _k, _f in sorted(P.items(), key=lambda kv: pub_sortkey(kv[1]), reverse=True):   # stable: ties keep bib order
+    if pub_section(_f): ORDER.setdefault(pub_section(_f), []).append(_k)
+def date_key(date):
+    """(end year, end month, start year, start month) of a biblatex range 'YYYY-MM/YYYY-MM'; missing month = 99 (first inside its year);
+    an open range (ongoing) has no end. Same ordering as the CV (cvstyle.sty, sorting template cvdated)."""
+    a, _, b = (date or '').partition('/')
+    def ym(x):
+        d = x.strip().split('-') + ['', '']
+        return (int(d[0] or 0), int(d[1] or 99) if d[0] else 0)
+    return ym(b) + ym(a)
+# Project lists come from projects.bib: status ongoing / finished, newest first (ties in bib-file order); status-less entries are not listed.
+PROJ_ORDER = {}
+for _st in ('ongoing', 'finished'):
+    PROJ_ORDER[_st] = [k for k, _e in sorted(((k, e) for k, e in J.items() if (e.get('status') or '').strip().lower() == _st),
+                                             key=lambda kv: date_key(kv[1].get('date')), reverse=True)]
 LISTED_PROJECTS = {k for ks in PROJ_ORDER.values() for k in ks}   # projects with a row (anchor) on projects.html
 E_ = html.escape
 MONTHS = 'Jan Feb Mar Apr May Jun Jul Aug Sep Oct Nov Dec'.split()
@@ -257,7 +282,7 @@ for t in H['topics']:   # plain heading + bulleted list (link + count where publ
       </div>''')
 research_note = '<p class=\"muted\">Linked sub-topics open the matching publications.</p>' if any(TAGCOUNT.get(st['id']) for t in H['topics'] for st in t['subtopics']) else ''
 cnt = {s['id']: len(ORDER.get(s['id'], [])) for s in CFG}
-short = {'journals': 'journal', 'conferences': 'conference', 'posters': 'posters', 'magazines': 'magazine', 'datasets': 'datasets'}
+short = {'journals': 'journal', 'conferences': 'conference', 'posters': 'posters', 'patents': 'patent', 'magazines': 'magazine', 'datasets': 'datasets'}
 pubs_listed = [k for s in CFG for k in ORDER.get(s['id'], [])]
 on, fin = PROJ_ORDER.get('ongoing', []), PROJ_ORDER.get('finished', [])
 # Supervision: ONLY the types listed in publications.yml `supervision.types` (default PhD + MSc) reach the site;
@@ -358,7 +383,7 @@ open(os.path.join(OUT, 'sitemap.xml'), 'w').write(
 open(os.path.join(OUT, 'robots.txt'), 'w').write(f'User-agent: *\nAllow: /\nSitemap: {SITE_URL}sitemap.xml\n')
 
 # llms.txt (llmstxt.org convention), generated only from the same sources as the pages: content.tex bio, projects.bib,
-# publications.bib/content.tex lists, supervision.bib, home.yml. No funding amounts; nothing written by hand here.
+# publications.bib lists, projects.bib order, supervision.bib, home.yml. No funding amounts; nothing written by hand here.
 from subpages import period, G, by   # same supervision grouping/order as supervision.html
 def _txt(s):   # LaTeX/HTML -> plain one-line text
     return re.sub(r'\s+', ' ', html.unescape(re.sub(r'<[^>]+>', '', L(s or '')))).strip()

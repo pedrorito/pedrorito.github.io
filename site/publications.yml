@@ -1,5 +1,5 @@
 # site/publications.yml — configuration of the publications (and supervision) pages (hand-edited; the DATA itself comes from the
-# private CV repo: publications.bib / projects.bib / supervision.bib / main.tex). One file, four top-level keys:
+# private CV repo: publications.bib / projects.bib / supervision.bib / content.tex,). One file, four top-level keys:
 #   sections  — the tables on publications.html (order, headings, columns, status filters)
 #   journals  — journal metadata keyed by the bib `journal` string (ISSN, publisher, homepage URL)
 #   series    — conference-series aliases for the ?venue= filter
@@ -9,8 +9,9 @@
 # =====================================================================================================================
 # sections
 # =====================================================================================================================
-# Publications page: one table per section, in this order (ids = publist labels in main.tex).
-# Entry order and membership come from main.tex (\pub{key} lines, newest first); numbering restarts per section.
+# Publications page: one table per section, in this order (ids = the list names: journals, conferences, posters, patents, magazines, datasets, ...).
+# Entry membership and order are generated from publications.bib (list = entry type, or `entrysubtype` = poster|magazine|dataset;
+# order = submitted, accepted, then newest first); numbering restarts per section.
 # Columns: any of  num, year, date, title, journal, publisher, volissue, pages, venue, event, location,
 #                  repository, projects, links
 #   title    = title + authors + status badge (Submitted/Accepted) + award badge
@@ -31,6 +32,9 @@ sections:
     note: Unpublished poster presentations (no proceedings).
     columns: [num, date, title, event, location, projects, links]
     status_filter: [published, accepted, submitted]
+  - id: patents
+    heading: Patents
+    columns: [num, year, title, links]
   - id: magazines
     heading: Magazines
     columns: [num, date, title, venue, publisher, projects, links]
