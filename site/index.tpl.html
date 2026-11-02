@@ -18,21 +18,17 @@
 {{NAV}}
 
 <main id="main" class="container">
-  <p class="sample-banner"><strong>Preview.</strong> Bio from the <code>cvbio</code> block in main.tex; counts and ongoing projects generated from the CV repo. Sub-topic chips become links once publications carry the matching <code>keywords</code>.</p>
+  <p class="sample-banner"><strong>Preview.</strong> Bio from <code>\biotext</code> in content.tex; counts and ongoing projects generated from the CV repo. Sub-topic chips become links once publications carry the matching <code>keywords</code>.</p>
 
   <header class="head" id="about">
-    <div class="head-text">
-      <h1 id="name">{{NAME}}</h1>
-      <p class="role">{{HEADLINE}}</p>
-    </div>
-    <picture>
-      <source type="image/webp" srcset="{{IMG}}-400.webp 400w" sizes="5rem">
+    <picture class="head-photo">
+      <source type="image/webp" srcset="{{IMG}}-400.webp 400w" sizes="9rem">
       <img class="photo" src="{{IMG}}-400.jpg" width="400" height="400" alt="Pedro Rito" decoding="async">
     </picture>
+    <h1 id="name">{{NAME}}</h1>
+    <p class="role">{{HEADLINE}}</p>
+    <div class="bio" data-source="content.tex biotext">{{BIO}}</div>
   </header>
-  <div class="bio" data-source="main.tex cvbio">{{BIO}}</div>
-
-  {{SECTION_NAV}}
 
   <section id="research" aria-labelledby="h-research">
     <h2 id="h-research">Research topics</h2>

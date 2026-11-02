@@ -461,3 +461,11 @@ table.plain tbody th { font-weight: 600; white-space: nowrap; }
 .contact-dl dd { margin: 0; }
 .contact-dl .sep { color: var(--fg-muted); margin: 0 .2rem; }
 @media (max-width: 40rem) { .contact-dl { grid-template-columns: 1fr; gap: .15rem; } .contact-dl dd { margin-bottom: .7rem; } }
+
+/* homepage intro: photo floats right, title and bio wrap around it (no section menu on the homepage) */
+.home .head { display: flow-root; padding-top: 1.75rem; }
+.home .head-photo { float: right; margin: .35rem 0 .75rem 1.5rem; line-height: 0; }
+.home .head .photo { width: 9rem; height: 9rem; }
+.home .head .bio { margin-top: 1rem; }
+.home .head .bio p { max-width: none; }
+@media (max-width: 30rem) { .home .head-photo { margin-left: 1rem; } .home .head .photo { width: 6.5rem; height: 6.5rem; } }

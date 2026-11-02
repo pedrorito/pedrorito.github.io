@@ -6,17 +6,10 @@ site:
   alternate_name: Pedro Filipe Vieira Rito
   url: https://pedrorito.me/
   image: img/pedro-rito-800.jpg   # hero photo (img/pedro-rito-{400,800}.{webp,jpg}); JSON-LD `image`
-  description: "Pedro Rito: researcher in circuit design and telecommunications & networks (IT Aveiro, University of Aveiro)."
+  description: "Pedro Rito: Assistant Professor at the University of Aveiro and researcher at IT Aveiro, working on circuit design and telecommunications & networks."
   # Hero second line (title). HTML allowed.
-  headline: 'Researcher, <a href="https://www.it.pt">Instituto de Telecomunicações (IT)</a>, <a href="https://www.ua.pt">University of Aveiro</a>'
+  headline: 'Assistant Professor, <a href="https://www.ua.pt">University of Aveiro</a> · Researcher, <a href="https://www.it.pt">Instituto de Telecomunicações (IT)</a>'
   knows_about: [Circuit design, Electro-optical transceivers, MMICs, Radio access networks, Vehicular networks, Telecommunications, Vehicular communications, Edge computing, Motorsport]
-
-# Homepage anchor chips (order = order of sections on the page).
-anchors:
-  - {id: research, label: Research}
-  - {id: highlights, label: At a glance}
-  - {id: projects, label: Ongoing projects}
-  - {id: contact, label: Contact}
 
 # Research topics. Each sub-topic `id` is a tag for the bib `keywords` field (e.g. keywords = {vehicular-networks, smart-cities}).
 # A chip links to publications.html?topic=<id> only when at least one listed publication carries that tag; otherwise it is plain text.

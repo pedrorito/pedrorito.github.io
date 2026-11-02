@@ -307,7 +307,6 @@ def proj_row(k):   # one table row per ongoing project
     start = (j.get('date') or '').split('/')[0][:4]
     return (f'      <tr><th scope="row">{h}</th><td class="pname">{L(j["title"]) if j.get("title") else ""}</td>'
             f'<td class="pfund">{E_(funder) or "–"}</td><td class="pyear">{start + "–" if start else "–"}</td></tr>')
-anchors = chip_nav([(f'#{a["id"]}', a['label']) for a in H['anchors']], 'On this page')
 # contact as a plain definition list of text links (no icons / pills); external links open in a new tab
 EXT = ' target="_blank" rel="noopener noreferrer"'
 def ext_links(html_):   # add target=_blank + noopener to absolute http(s) links that have no target yet
@@ -319,7 +318,7 @@ contact = ('    <dl class="contact-dl">\n      <dt>Address</dt><dd>' + '<br>'.jo
                for g in C['groups']) + '    </dl>')
 idx = open('index.tpl.html').read()
 for k, v in {'{{THEME_HEAD}}': THEME_HEAD, '{{NAV}}': nav('index.html'), '{{NAME}}': E_(site['name']), '{{DESCRIPTION}}': E_(site['description']),
-             '{{HEADLINE}}': site['headline'], '{{BIO}}': bio, '{{SECTION_NAV}}': anchors, '{{TOPICS}}': '\n'.join(topics), '{{RESEARCH_NOTE}}': research_note, '{{IMG}}': site['image'].rsplit('-', 1)[0],
+             '{{HEADLINE}}': site['headline'], '{{BIO}}': bio, '{{TOPICS}}': '\n'.join(topics), '{{RESEARCH_NOTE}}': research_note, '{{IMG}}': site['image'].rsplit('-', 1)[0],
              '{{GLANCE}}': '\n'.join('      ' + g for g in glance), '{{ONGOING}}': '\n'.join(proj_row(k) for k in on),
              '{{OUTSIDE}}': ext_links(H['outside_lab']['html']), '{{FOOTER}}': footer(), '{{CONTACT}}': ext_links(contact),
              '{{JSONLD}}': '\n'.join('  ' + l for l in json.dumps(jsonld, ensure_ascii=False, indent=2).splitlines())}.items():
