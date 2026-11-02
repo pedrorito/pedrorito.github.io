@@ -393,7 +393,7 @@ def _names(s):
     return [_txt(f'{a.partition(", ")[2]} {a.partition(", ")[0]}') for a in clean(s or '').split(' and ') if a.strip()]
 _bio = re.sub(r'\s+', ' ', WEB.get('biotext', ''))
 _bio = _txt(re.sub(r'\\href\{[^{}]*\}\{([^{}]*)\}', r'\1', _bio))
-_llm = [f'# {site["name"]}', '', f'> {re.split(r"(?<=\.)\s", _bio)[0]}' if _bio else '', '', _bio, '', '## Pages', '']
+_llm = [f'# {site["name"]}', '', f'> {site["description"]}', '', _bio, '', '## Pages', '']
 _llm += [f'- [{t}]({SITE_URL + ("" if h == "index.html" else h)}): {_meta_desc(h)}' for h, t in NAV_ITEMS if os.path.exists(os.path.join(OUT, h))]
 _llm += ['', '## Projects', '']
 for _head, _keys in (('Ongoing', on), ('Finished', fin)):
