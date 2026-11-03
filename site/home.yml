@@ -8,7 +8,7 @@ site:
   image: img/pedro-rito-800.jpg   # hero photo (img/pedro-rito-{400,800}.{webp,jpg}); JSON-LD `image`
   description: "Pedro Rito: Assistant Professor at the University of Aveiro and researcher at IT Aveiro, working on circuit design and telecommunications & networks."
   # Hero second line (title). HTML allowed.
-  headline: 'Assistant Professor, <a href="https://www.ua.pt">University of Aveiro</a> · Researcher, <a href="https://www.it.pt">Instituto de Telecomunicações (IT)</a>'
+  headline: 'Assistant Professor, <a href="https://www.ua.pt/pt/p/80308710">University of Aveiro</a> · Researcher, <a href="https://www.it.pt/Members/Index/32142">Instituto de Telecomunicações (IT)</a>'
   knows_about: [Circuit design, Electro-optical transceivers, MMICs, Radio access networks, Vehicular networks, Telecommunications, Vehicular communications, Edge computing, Motorsport]
 
 # Research topics. Each sub-topic `id` is a tag for the bib `keywords` field (e.g. keywords = {vehicular-networks, smart-cities}).

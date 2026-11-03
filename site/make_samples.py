@@ -147,9 +147,8 @@ def cell(col, e, n):
                 out.append(f'<span class="badge project" data-project="{p}" title="{E_(clean(j.get("title", p)))}">{E_(plabel(p))}</span>')
         return 'c-projects', 'Projects', ('<div class="badges">' + ''.join(out) + '</div>') if out else NA
     if col == 'links':
-        # no standalone DOI link: the title already links to https://doi.org/<doi>; entries without a DOI keep their URL link
-        Ls = [] if e.get('doi') else ([f'<a href="{E_(e["url"])}">Link</a>'] if e.get('url') else [])
-        return 'c-links', 'Links', ' · '.join(Ls + [f'<a href="bib/{e["_key"]}.bib">BibTeX</a>'])
+        # no standalone DOI/URL link: the title already links to https://doi.org/<doi> or, without a DOI, to the entry's url
+        return 'c-links', 'Links', f'<a href="bib/{e["_key"]}.bib">BibTeX</a>'
     if col == 'title':
         t = L(e['title']); url = f"https://doi.org/{e['doi']}" if e.get('doi') else e.get('url')
         b = []
@@ -307,10 +306,11 @@ def proj_row(k):   # one table row per ongoing project
     start = (j.get('date') or '').split('/')[0][:4]
     return (f'      <tr><th scope="row">{h}</th><td class="pname">{L(j["title"]) if j.get("title") else ""}</td>'
             f'<td class="pfund">{E_(funder) or "–"}</td><td class="pyear">{start + "–" if start else "–"}</td></tr>')
-# contact as a plain definition list of text links (no icons / pills); external links open in a new tab
+# every external (absolute http/https, not pedrorito.me) link on every page opens in a new tab: ext_links() is applied to all generated .html files at the end
+# contact as a plain definition list of text links (no icons / pills)
 EXT = ' target="_blank" rel="noopener noreferrer"'
 def ext_links(html_):   # add target=_blank + noopener to absolute http(s) links that have no target yet
-    return re.sub(r'<a ((?:(?!target=)[^>])*?href="https?://[^"]+"(?:(?!target=)[^>])*)>',
+    return re.sub(r'<a ((?:(?!target=)[^>])*?href="https?://(?!pedrorito\.me[/"])[^"]+"(?:(?!target=)[^>])*)>',
                   lambda m: '<a ' + (re.sub(r'\s*rel="me"\s*', ' ', m.group(1)).strip() + (' target="_blank" rel="me noopener noreferrer"' if 'rel="me"' in m.group(1) else EXT)) + '>', html_)
 contact = ('    <dl class="contact-dl">\n      <dt>Address</dt><dd>' + '<br>'.join(E_(x) for x in C['affiliation']) + '</dd>\n'
            + ''.join(f'      <dt>{E_(g["label"])}</dt><dd>' + ' <span class="sep">·</span> '.join(
@@ -381,6 +381,9 @@ open(os.path.join(OUT, 'sitemap.xml'), 'w').write(
     + ''.join(f'  <url><loc>{E_(u)}</loc><lastmod>{_today}</lastmod></url>\n' for u in _urls) + '</urlset>\n')
 open(os.path.join(OUT, 'robots.txt'), 'w').write(f'User-agent: *\nAllow: /\nSitemap: {SITE_URL}sitemap.xml\n')
 
+for _f in sorted(os.listdir(OUT)):   # all pages: external links open in a new tab
+    if _f.endswith('.html'):
+        _p = os.path.join(OUT, _f); _s = open(_p).read(); open(_p, 'w').write(ext_links(_s))
 # llms.txt (llmstxt.org convention), generated only from the same sources as the pages: content.tex bio, projects.bib,
 # publications.bib lists, projects.bib order, supervision.bib, home.yml. No funding amounts; nothing written by hand here.
 from subpages import period, G, by   # same supervision grouping/order as supervision.html
